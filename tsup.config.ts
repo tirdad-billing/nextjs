@@ -11,7 +11,6 @@ export default defineConfig([
     format: ["esm", "cjs"],
     dts: true,
     sourcemap: true,
-    clean: true,
     splitting: true,
     treeshake: true,
     external: ["next", "react", "react-dom"],

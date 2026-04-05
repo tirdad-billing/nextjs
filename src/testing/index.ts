@@ -183,6 +183,45 @@ export function MockFlexpriceBilling(
     async resumeSubscription() {
       // no-op in mock
     },
+
+    async getInvoices() {
+      return { invoices: [], total: 0 };
+    },
+
+    async getInvoice() {
+      return null;
+    },
+
+    async getInvoicePdfUrl() {
+      return null;
+    },
+
+    async validateCoupon() {
+      return null;
+    },
+
+    async previewPlanChange() {
+      return {
+        changeType: "upgrade",
+        currentPlanId: null,
+        currentPlanName: null,
+        targetPlanId: null,
+        targetPlanName: null,
+        effectiveDate: null,
+        subscriptionId: null,
+        prorationDetails: null,
+        nextInvoicePreview: null,
+        warnings: [],
+      };
+    },
+
+    async changePlan() {
+      return {};
+    },
+
+    async trackUsageBatch() {
+      // no-op in mock
+    },
   };
 }
 

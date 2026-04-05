@@ -97,6 +97,17 @@ export function FlexpriceBillingExpress(
             return res.json(summary);
           }
 
+          case "/invoices": {
+            const actor = await resolveActor(config, req);
+            const limit = asString(req.query.limit);
+            const offset = asString(req.query.offset);
+            const result = await billing.getInvoices(actor.externalId, {
+              limit: limit ? parseInt(limit, 10) : undefined,
+              offset: offset ? parseInt(offset, 10) : undefined,
+            });
+            return res.json(result);
+          }
+
           default:
             return next();
         }
@@ -160,6 +171,12 @@ export function FlexpriceBillingExpress(
               properties: usageBody.properties,
             });
             return res.json({ status: "ok" });
+          }
+
+          case "/coupons/validate": {
+            const { code } = req.body as { code: string };
+            const coupon = await billing.validateCoupon(code);
+            return res.json({ coupon, valid: coupon !== null });
           }
 
           default:

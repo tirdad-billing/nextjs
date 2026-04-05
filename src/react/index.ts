@@ -1,9 +1,8 @@
 /**
  * @flexprice/billing/react — React Hooks & Components
  *
- * Provides usePlans, useSubscriptions, useEntitlements, useUsage hooks
- * and the FeatureGate component. All hooks call the auto-mounted
- * billing API routes via the FlexpriceClient.
+ * Provides React hooks for plans, subscriptions, entitlements, usage, invoices
+ * and the FeatureGate / UsageBar components.
  *
  * IMPORTANT: <FeatureGate> is for UX only, NOT for security.
  * Always enforce access server-side with requireFeature() or hasAccess().
@@ -14,5 +13,7 @@ export { usePlans } from "./use-plans.js";
 export { useSubscriptions } from "./use-subscriptions.js";
 export { useEntitlements, useHasFeature } from "./use-entitlements.js";
 export { useUsage } from "./use-usage.js";
+export { useInvoices } from "./use-invoices.js";
 export { FeatureGate } from "./feature-gate.jsx";
+export { UsageBar } from "./usage-bar.jsx";
 export { BillingProvider, useBillingClient } from "./provider.jsx";

@@ -40,6 +40,21 @@ import {
   pauseSubscription as pauseSubscriptionHelper,
   resumeSubscription as resumeSubscriptionHelper,
 } from "./subscriptions.js";
+import {
+  getInvoices as getInvoicesHelper,
+  getInvoice as getInvoiceHelper,
+  getInvoicePdfUrl as getInvoicePdfUrlHelper,
+  type BillingInvoice,
+} from "./invoices.js";
+import {
+  validateCoupon as validateCouponHelper,
+  type BillingCoupon,
+} from "./coupons.js";
+import {
+  previewPlanChange as previewPlanChangeHelper,
+  changePlan as changePlanHelper,
+  type PlanChangePreview,
+} from "./plan-change.js";
 
 
 /** The billing instance returned by FlexpriceBilling(). */
@@ -109,6 +124,39 @@ export interface BillingInstance {
   ): Promise<void>;
   /** Resume a paused subscription. */
   resumeSubscription(subscriptionId: string): Promise<void>;
+
+  // ── Invoices ──────────────────────────────
+  /** Get invoices for a customer. */
+  getInvoices(
+    externalId: string,
+    options?: { limit?: number; offset?: number },
+  ): Promise<{ invoices: BillingInvoice[]; total: number }>;
+  /** Get a single invoice by ID. */
+  getInvoice(invoiceId: string): Promise<BillingInvoice | null>;
+  /** Get invoice PDF download URL. */
+  getInvoicePdfUrl(invoiceId: string): Promise<string | null>;
+
+  // ── Coupons ───────────────────────────────
+  /** Validate a coupon code. Returns null if invalid/expired. */
+  validateCoupon(codeOrId: string): Promise<BillingCoupon | null>;
+
+  // ── Plan Change ───────────────────────────
+  /** Preview a plan change (proration details). */
+  previewPlanChange(
+    subscriptionId: string,
+    targetPlanId: string,
+    options?: { billingCadence?: string; billingPeriod?: string; prorationBehavior?: string },
+  ): Promise<PlanChangePreview>;
+  /** Execute a plan change. */
+  changePlan(
+    subscriptionId: string,
+    targetPlanId: string,
+    options?: { billingCadence?: string; billingPeriod?: string; prorationBehavior?: string },
+  ): Promise<unknown>;
+
+  // ── Batch Usage ───────────────────────────
+  /** Track multiple usage events at once. */
+  trackUsageBatch(events: TrackUsageParams[]): Promise<void>;
 
   // ── Webhook ───────────────────────────────
   /** Handle an incoming webhook request (internal use by adapters). */
@@ -323,6 +371,55 @@ export function createBillingInstance(
 
     async resumeSubscription(subscriptionId: string): Promise<void> {
       return resumeSubscriptionHelper(sdk, subscriptionId);
+    },
+
+    // ── Invoices ──────────────────────────────
+    async getInvoices(
+      externalId: string,
+      options?: { limit?: number; offset?: number },
+    ): Promise<{ invoices: BillingInvoice[]; total: number }> {
+      const customerId = await resolveCustomerId(externalId);
+      return getInvoicesHelper(sdk, customerId, options);
+    },
+
+    async getInvoice(invoiceId: string): Promise<BillingInvoice | null> {
+      return getInvoiceHelper(sdk, invoiceId);
+    },
+
+    async getInvoicePdfUrl(invoiceId: string): Promise<string | null> {
+      return getInvoicePdfUrlHelper(sdk, invoiceId);
+    },
+
+    // ── Coupons ───────────────────────────────
+    async validateCoupon(codeOrId: string): Promise<BillingCoupon | null> {
+      return validateCouponHelper(sdk, codeOrId);
+    },
+
+    // ── Plan Change ──────────────────────────
+    async previewPlanChange(
+      subscriptionId: string,
+      targetPlanId: string,
+      options?: { billingCadence?: string; billingPeriod?: string; prorationBehavior?: string },
+    ): Promise<PlanChangePreview> {
+      return previewPlanChangeHelper(sdk, subscriptionId, targetPlanId, options);
+    },
+
+    async changePlan(
+      subscriptionId: string,
+      targetPlanId: string,
+      options?: { billingCadence?: string; billingPeriod?: string; prorationBehavior?: string },
+    ): Promise<unknown> {
+      return changePlanHelper(sdk, subscriptionId, targetPlanId, options);
+    },
+
+    // ── Batch Usage ──────────────────────────
+    async trackUsageBatch(events: TrackUsageParams[]): Promise<void> {
+      await Promise.allSettled(
+        events.map(async (params) => {
+          const customerId = await resolveCustomerId(params.externalId);
+          return trackUsage(sdk, customerId, params);
+        }),
+      );
     },
 
     // ── Webhook ───────────────────────────────

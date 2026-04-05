@@ -98,6 +98,26 @@ export class FlexpriceClient {
     return this.get(`${this.basePath}/usage/summary`);
   }
 
+  // ── Invoices ──────────────────────────────
+
+  async getInvoices(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<{ invoices: unknown[]; total: number }> {
+    const params = new URLSearchParams();
+    if (options?.limit) params.set("limit", String(options.limit));
+    if (options?.offset) params.set("offset", String(options.offset));
+    const qs = params.toString();
+    const url = `${this.basePath}/invoices${qs ? `?${qs}` : ""}`;
+    return this.get(url);
+  }
+
+  // ── Coupons ───────────────────────────────
+
+  async validateCoupon(code: string): Promise<unknown> {
+    return this.post(`${this.basePath}/coupons/validate`, { code });
+  }
+
   // ── Internal HTTP Methods ─────────────────
 
   private async get<T>(url: string): Promise<T> {

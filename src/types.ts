@@ -132,7 +132,9 @@ export type RouteKey =
   | "entitlements"
   | "entitlements.check"
   | "usage"
-  | "usage.summary";
+  | "usage.summary"
+  | "invoices"
+  | "coupons.validate";
 
 /** Route configuration options. */
 export interface RouteConfig {
@@ -246,6 +248,14 @@ export interface FlexpriceBillingConfig {
   webhooks?: WebhookConfig;
   observability?: ObservabilityConfig;
   on?: FlexpriceCallbacks;
+  /**
+   * Enable in-memory caching for entitlement checks.
+   * Set to `true` for defaults (60s TTL, 500 max entries),
+   * or pass an object to configure.
+   */
+  entitlementCache?:
+    | boolean
+    | { ttlMs?: number; maxEntries?: number };
 }
 
 // ─── Helper Return Types ──────────────────────────────────────

@@ -81,6 +81,12 @@ export function FlexpriceBilling(config: FlexpriceBillingConfig) {
         case "usage.summary":
           return handleUsageSummary(actor!);
 
+        case "invoices":
+          return handleInvoices(req, actor!);
+
+        case "coupons.validate":
+          return handleCouponValidate(req);
+
         default:
           return Response.json({ error: "Not found" }, { status: 404 });
       }
@@ -225,6 +231,37 @@ export function FlexpriceBilling(config: FlexpriceBillingConfig) {
   async function handleUsageSummary(actor: BillingActor): Promise<Response> {
     const summary = await billing.getUsageSummary(actor.externalId);
     return Response.json({ usage: summary });
+  }
+
+  async function handleInvoices(
+    req: NextRequest,
+    actor: BillingActor,
+  ): Promise<Response> {
+    const url = new URL(req.url);
+    const limit = url.searchParams.get("limit");
+    const offset = url.searchParams.get("offset");
+
+    const result = await billing.getInvoices(actor.externalId, {
+      limit: limit ? parseInt(limit, 10) : undefined,
+      offset: offset ? parseInt(offset, 10) : undefined,
+    });
+    return Response.json(result);
+  }
+
+  async function handleCouponValidate(req: NextRequest): Promise<Response> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body = (await req.json()) as Record<string, any>;
+    const { code } = body;
+
+    if (!code) {
+      return Response.json(
+        { error: "code is required" },
+        { status: 400 },
+      );
+    }
+
+    const coupon = await billing.validateCoupon(code);
+    return Response.json({ coupon, valid: coupon !== null });
   }
 
   // ── Middleware Helpers ──────────────────────────────────────

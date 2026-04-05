@@ -55,6 +55,7 @@ import {
   changePlan as changePlanHelper,
   type PlanChangePreview,
 } from "./plan-change.js";
+import { EntitlementCache } from "./cache.js";
 
 
 /** The billing instance returned by FlexpriceBilling(). */
@@ -221,6 +222,14 @@ export function createBillingInstance(
   // Customer ID cache: externalId → Flexprice customerId
   const customerIdCache = new Map<string, string>();
 
+  // Entitlement cache (optional)
+  const entitlementCacheConfig = billingConfig.entitlementCache;
+  const entitlementCache = entitlementCacheConfig
+    ? new EntitlementCache(
+        typeof entitlementCacheConfig === "object" ? entitlementCacheConfig : undefined,
+      )
+    : null;
+
   /**
    * Resolve externalId to Flexprice customerId, with caching.
    */
@@ -261,6 +270,16 @@ export function createBillingInstance(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getEntitlements(externalId: string): Promise<any> {
       const customerId = await resolveCustomerId(externalId);
+
+      if (entitlementCache) {
+        const cacheKey = EntitlementCache.allEntitlementsKey(customerId);
+        const cached = entitlementCache.get(cacheKey);
+        if (cached) return cached;
+        const result = await getEntitlements(sdk, customerId);
+        entitlementCache.set(cacheKey, result);
+        return result;
+      }
+
       return getEntitlements(sdk, customerId);
     },
 
@@ -269,6 +288,16 @@ export function createBillingInstance(
       lookupKey: string,
     ): Promise<EntitlementCheckResult> {
       const customerId = await resolveCustomerId(externalId);
+
+      if (entitlementCache) {
+        const cacheKey = EntitlementCache.key(customerId, lookupKey);
+        const cached = entitlementCache.get<EntitlementCheckResult>(cacheKey);
+        if (cached) return cached;
+        const result = await checkFeature(sdk, customerId, lookupKey);
+        entitlementCache.set(cacheKey, result);
+        return result;
+      }
+
       return checkFeature(sdk, customerId, lookupKey);
     },
 
@@ -277,6 +306,16 @@ export function createBillingInstance(
       lookupKey: string,
     ): Promise<boolean> {
       const customerId = await resolveCustomerId(externalId);
+
+      if (entitlementCache) {
+        const cacheKey = EntitlementCache.key(customerId, `access:${lookupKey}`);
+        const cached = entitlementCache.get<boolean>(cacheKey);
+        if (cached !== null) return cached;
+        const result = await hasAccess(sdk, customerId, lookupKey);
+        entitlementCache.set(cacheKey, result);
+        return result;
+      }
+
       return hasAccess(sdk, customerId, lookupKey);
     },
 

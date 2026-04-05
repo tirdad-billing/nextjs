@@ -97,7 +97,7 @@ describe("matchRoute", () => {
 describe("getActiveRoutes", () => {
   it("returns all 9 routes with defaults", () => {
     const routes = getActiveRoutes();
-    expect(routes).toHaveLength(9);
+    expect(routes).toHaveLength(11);
     expect(routes[0]).toEqual({
       key: "plans",
       method: "GET",
@@ -107,7 +107,7 @@ describe("getActiveRoutes", () => {
 
   it("excludes disabled routes", () => {
     const routes = getActiveRoutes({ disable: ["plans", "webhook"] });
-    expect(routes).toHaveLength(7);
+    expect(routes).toHaveLength(9);
     expect(routes.find((r) => r.key === "plans")).toBeUndefined();
     expect(routes.find((r) => r.key === "webhook")).toBeUndefined();
   });

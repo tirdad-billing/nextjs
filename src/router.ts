@@ -28,6 +28,8 @@ const ROUTE_DEFINITIONS: Array<{
   { key: "entitlements.check", method: "POST", path: "/entitlements/check" },
   { key: "usage", method: "POST", path: "/usage" },
   { key: "usage.summary", method: "GET", path: "/usage/summary" },
+  { key: "invoices", method: "GET", path: "/invoices" },
+  { key: "coupons.validate", method: "POST", path: "/coupons/validate" },
 ];
 
 /**

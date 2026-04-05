@@ -39,4 +39,30 @@ export default defineConfig([
     splitting: false,
     treeshake: true,
   },
+  // React hooks & components
+  {
+    entry: {
+      "react/index": "src/react/index.ts",
+    },
+    format: ["esm", "cjs"],
+    dts: true,
+    sourcemap: true,
+    splitting: false,
+    treeshake: true,
+    external: ["react", "react-dom", "react/jsx-runtime"],
+    banner: {
+      js: '"use client";',
+    },
+  },
+  // Express adapter
+  {
+    entry: {
+      "express/index": "src/express/index.ts",
+    },
+    format: ["esm", "cjs"],
+    dts: true,
+    sourcemap: true,
+    splitting: false,
+    treeshake: true,
+  },
 ]);

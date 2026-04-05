@@ -163,6 +163,26 @@ export function MockFlexpriceBilling(
       webhookCalls.push({ body, headers });
       return { status: 200, body: '{"status":"ok"}' };
     },
+
+    async getSubscriptions() {
+      return [];
+    },
+
+    async getPrimarySubscription() {
+      return null;
+    },
+
+    async cancelSubscription() {
+      // no-op in mock
+    },
+
+    async pauseSubscription() {
+      // no-op in mock
+    },
+
+    async resumeSubscription() {
+      // no-op in mock
+    },
   };
 }
 

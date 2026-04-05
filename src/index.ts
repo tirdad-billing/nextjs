@@ -10,6 +10,7 @@ import type {
   FlexpriceBillingConfig,
   BillingActor,
   BillingPlan,
+  BillingSubscription,
   EntitlementCheckResult,
   FeatureUsageResult,
   TrackUsageParams,
@@ -32,6 +33,13 @@ import {
   getFeatureUsage,
   isWithinLimit,
 } from "./usage.js";
+import {
+  getSubscriptions as getSubscriptionsHelper,
+  getPrimarySubscription,
+  cancelSubscription as cancelSubscriptionHelper,
+  pauseSubscription as pauseSubscriptionHelper,
+  resumeSubscription as resumeSubscriptionHelper,
+} from "./subscriptions.js";
 
 
 /** The billing instance returned by FlexpriceBilling(). */
@@ -83,6 +91,24 @@ export interface BillingInstance {
     actor: BillingActor,
     params: CheckoutParams,
   ): Promise<{ url: string; subscriptionId?: string }>;
+
+  // ── Subscriptions ─────────────────────────
+  /** Get all subscriptions for a customer. */
+  getSubscriptions(externalId: string): Promise<BillingSubscription[]>;
+  /** Get the primary (active) subscription. */
+  getPrimarySubscription(externalId: string): Promise<BillingSubscription | null>;
+  /** Cancel a subscription. */
+  cancelSubscription(
+    subscriptionId: string,
+    options?: { cancelAtPeriodEnd?: boolean },
+  ): Promise<void>;
+  /** Pause a subscription. */
+  pauseSubscription(
+    subscriptionId: string,
+    options?: { pauseDays?: number; pauseUntil?: string },
+  ): Promise<void>;
+  /** Resume a paused subscription. */
+  resumeSubscription(subscriptionId: string): Promise<void>;
 
   // ── Webhook ───────────────────────────────
   /** Handle an incoming webhook request (internal use by adapters). */
@@ -266,6 +292,37 @@ export function createBillingInstance(
         url: checkoutUrl,
         subscriptionId: subResponse.id ?? subResponse.subscription_id,
       };
+    },
+
+    // ── Subscriptions ─────────────────────────
+    async getSubscriptions(externalId: string): Promise<BillingSubscription[]> {
+      const customerId = await resolveCustomerId(externalId);
+      return getSubscriptionsHelper(sdk, customerId);
+    },
+
+    async getPrimarySubscription(
+      externalId: string,
+    ): Promise<BillingSubscription | null> {
+      const customerId = await resolveCustomerId(externalId);
+      return getPrimarySubscription(sdk, customerId);
+    },
+
+    async cancelSubscription(
+      subscriptionId: string,
+      options?: { cancelAtPeriodEnd?: boolean },
+    ): Promise<void> {
+      return cancelSubscriptionHelper(sdk, subscriptionId, options);
+    },
+
+    async pauseSubscription(
+      subscriptionId: string,
+      options?: { pauseDays?: number; pauseUntil?: string },
+    ): Promise<void> {
+      return pauseSubscriptionHelper(sdk, subscriptionId, options);
+    },
+
+    async resumeSubscription(subscriptionId: string): Promise<void> {
+      return resumeSubscriptionHelper(sdk, subscriptionId);
     },
 
     // ── Webhook ───────────────────────────────

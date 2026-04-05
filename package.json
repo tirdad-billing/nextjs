@@ -39,12 +39,12 @@
     },
     "./react": {
       "import": {
-        "types": "./dist/client/react.d.ts",
-        "default": "./dist/client/react.js"
+        "types": "./dist/react/index.d.ts",
+        "default": "./dist/react/index.js"
       },
       "require": {
-        "types": "./dist/client/react.d.cts",
-        "default": "./dist/client/react.cjs"
+        "types": "./dist/react/index.d.cts",
+        "default": "./dist/react/index.cjs"
       }
     },
     "./testing": {
@@ -55,6 +55,16 @@
       "require": {
         "types": "./dist/testing/index.d.cts",
         "default": "./dist/testing/index.cjs"
+      }
+    },
+    "./express": {
+      "import": {
+        "types": "./dist/express/index.d.ts",
+        "default": "./dist/express/index.js"
+      },
+      "require": {
+        "types": "./dist/express/index.d.cts",
+        "default": "./dist/express/index.cjs"
       }
     }
   },
@@ -87,6 +97,8 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/react": "^19.2.14",
+    "react": ">=18",
     "tsup": "^8",
     "typescript": "^5",
     "vitest": "^3"

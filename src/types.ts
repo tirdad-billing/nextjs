@@ -329,9 +329,12 @@ export interface CheckoutParams {
 /** Subscription shape returned by subscriptions route. */
 export interface BillingSubscription {
   id: string;
+  customerId: string;
   planId: string;
   status: SubscriptionStatus;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  trialEnd: string | null;
+  metadata: Record<string, string>;
 }

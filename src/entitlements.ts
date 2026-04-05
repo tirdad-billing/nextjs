@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Entitlements Module
+ * @tirdad/billing — Entitlements Module
  *
  * Convenience wrappers over SDK's getCustomerEntitlements.
  * Resolves externalId → customerId internally.

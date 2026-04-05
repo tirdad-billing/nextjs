@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Currency Formatting
+ * @tirdad/billing — Currency Formatting
  *
  * Locale-aware price formatting using Intl.NumberFormat.
  */

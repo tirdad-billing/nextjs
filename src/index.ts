@@ -1,13 +1,13 @@
 /**
- * @flexprice/billing — Main Entry Point
+ * @tirdad/billing — Main Entry Point
  *
- * FlexpriceBilling factory: the ONE function that configures everything.
+ * TirdadBilling factory: the ONE function that configures everything.
  * Re-exports all types and the SDK for escape hatches.
  */
 
 import { Flexprice } from "@flexprice/sdk";
 import type {
-  FlexpriceBillingConfig,
+  TirdadBillingConfig,
   BillingActor,
   BillingPlan,
   BillingSubscription,
@@ -58,13 +58,13 @@ import {
 import { EntitlementCache } from "./cache.js";
 
 
-/** The billing instance returned by FlexpriceBilling(). */
+/** The billing instance returned by TirdadBilling(). */
 export interface BillingInstance {
   /** The underlying @flexprice/sdk client (escape hatch). */
   sdk: Flexprice;
 
   // ── Customer Resolution ───────────────────
-  /** Resolve a BillingActor to a Flexprice customer. */
+  /** Resolve a BillingActor to a Tirdad customer. */
   resolveCustomer(actor: BillingActor): Promise<ResolvedCustomer>;
 
   // ── Plans ─────────────────────────────────
@@ -168,7 +168,7 @@ export interface BillingInstance {
 
   // ── Internal ──────────────────────────────
   /** The full configuration. */
-  config: FlexpriceBillingConfig;
+  config: TirdadBillingConfig;
 }
 
 /**
@@ -178,7 +178,7 @@ export interface BillingInstance {
  * to add route handling.
  */
 export function createBillingInstance(
-  billingConfig: FlexpriceBillingConfig,
+  billingConfig: TirdadBillingConfig,
 ): BillingInstance {
   const { config } = billingConfig;
   const logger: MinimalLogger = billingConfig.observability?.logger ?? console;
@@ -219,7 +219,7 @@ export function createBillingInstance(
     onWebhook: billingConfig.observability?.onWebhook,
   });
 
-  // Customer ID cache: externalId → Flexprice customerId
+  // Customer ID cache: externalId → Tirdad customerId
   const customerIdCache = new Map<string, string>();
 
   // Entitlement cache (optional)
@@ -231,7 +231,7 @@ export function createBillingInstance(
     : null;
 
   /**
-   * Resolve externalId to Flexprice customerId, with caching.
+   * Resolve externalId to Tirdad customerId, with caching.
    */
   async function resolveCustomerId(externalId: string): Promise<string> {
     const cached = customerIdCache.get(externalId);
@@ -465,14 +465,14 @@ export function createBillingInstance(
     handleWebhook,
   };
 
-  logger.info("[billing] FlexpriceBilling initialized");
+  logger.info("[billing] TirdadBilling initialized");
 
   return instance;
 }
 
 // ─── Re-exports ───────────────────────────────────────────────
 
-export { BillingCoreError, FlexpriceClientError } from "./errors.js";
+export { BillingCoreError, TirdadClientError } from "./errors.js";
 export { formatPrice } from "./currency.js";
 export { matchRoute, getActiveRoutes } from "./router.js";
 
@@ -486,11 +486,11 @@ export type {
   FeatureUsageResult,
   TrackUsageParams,
   CheckoutParams,
-  FlexpriceEventMap,
-  FlexpriceEventName,
-  FlexpriceCallbacks,
-  FlexpriceBillingConfig,
-  FlexpriceConnectionConfig,
+  TirdadEventMap,
+  TirdadEventName,
+  TirdadCallbacks,
+  TirdadBillingConfig,
+  TirdadConnectionConfig,
   AuthConfig,
   CheckoutConfig,
   RouteKey,
@@ -501,10 +501,10 @@ export type {
   MinimalLogger,
   SubscriptionStatus,
   WebhookContext,
-  FlexpriceCustomerInfo,
-  FlexpriceSubscriptionInfo,
-  FlexpriceInvoiceInfo,
-  FlexpriceWalletInfo,
+  TirdadCustomerInfo,
+  TirdadSubscriptionInfo,
+  TirdadInvoiceInfo,
+  TirdadWalletInfo,
 } from "./types.js";
 
 export type { ResolvedCustomer } from "./auth.js";

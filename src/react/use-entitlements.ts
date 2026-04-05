@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing/react — useEntitlements / useHasFeature hooks
+ * @tirdad/billing/react — useEntitlements / useHasFeature hooks
  */
 "use client";
 

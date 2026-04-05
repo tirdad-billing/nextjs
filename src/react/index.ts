@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing/react — React Hooks & Components
+ * @tirdad/billing/react — React Hooks & Components
  *
  * Provides React hooks for plans, subscriptions, entitlements, usage, invoices
  * and the FeatureGate / UsageBar components.

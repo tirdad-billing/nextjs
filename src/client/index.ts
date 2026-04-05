@@ -1,18 +1,18 @@
 /**
- * @flexprice/billing/client — Browser-safe Client SDK
+ * @tirdad/billing/client — Browser-safe Client SDK
  *
  * Typed fetch wrappers for calling billing API routes from the browser.
  * No server-side dependencies (no @flexprice/sdk, no svix).
  */
 
-import { FlexpriceClientError } from "../errors.js";
+import { TirdadClientError } from "../errors.js";
 import type {
   BillingPlan,
   EntitlementCheckResult,
   BillingSubscription,
 } from "../types.js";
 
-export interface FlexpriceClientOptions {
+export interface TirdadClientOptions {
   /** Base URL for billing API routes. Default: "/api/billing" */
   basePath?: string;
   /** Custom fetch function (for testing or SSR). */
@@ -24,12 +24,12 @@ export interface FlexpriceClientOptions {
 /**
  * Browser-safe client for calling billing API routes.
  */
-export class FlexpriceClient {
+export class TirdadClient {
   private basePath: string;
   private fetchFn: typeof globalThis.fetch;
   private headers: Record<string, string>;
 
-  constructor(options?: FlexpriceClientOptions) {
+  constructor(options?: TirdadClientOptions) {
     this.basePath = options?.basePath ?? "/api/billing";
     this.fetchFn = options?.fetch ?? globalThis.fetch.bind(globalThis);
     this.headers = options?.headers ?? {};
@@ -133,7 +133,7 @@ export class FlexpriceClient {
     if (!res.ok) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body = (await res.json().catch(() => ({}))) as Record<string, any>;
-      throw new FlexpriceClientError(
+      throw new TirdadClientError(
         res.status,
         body.error ?? res.statusText,
         body.code,
@@ -157,7 +157,7 @@ export class FlexpriceClient {
     if (!res.ok) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = (await res.json().catch(() => ({}))) as Record<string, any>;
-      throw new FlexpriceClientError(
+      throw new TirdadClientError(
         res.status,
         data.error ?? res.statusText,
         data.code,

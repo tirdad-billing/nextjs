@@ -1,22 +1,22 @@
 /**
- * @flexprice/billing/react — BillingProvider
+ * @tirdad/billing/react — BillingProvider
  *
- * Context provider for FlexpriceClient. Wraps the component tree
+ * Context provider for TirdadClient. Wraps the component tree
  * so that hooks can access the client without prop drilling.
  */
 "use client";
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
-import { FlexpriceClient, type FlexpriceClientOptions } from "../client/index.js";
+import { TirdadClient, type TirdadClientOptions } from "../client/index.js";
 
-const BillingContext = createContext<FlexpriceClient | null>(null);
+const BillingContext = createContext<TirdadClient | null>(null);
 
 export interface BillingProviderProps {
   children: ReactNode;
-  /** FlexpriceClient options. Default basePath: "/api/billing" */
-  options?: FlexpriceClientOptions;
+  /** TirdadClient options. Default basePath: "/api/billing" */
+  options?: TirdadClientOptions;
   /** Pre-constructed client instance (overrides options). */
-  client?: FlexpriceClient;
+  client?: TirdadClient;
 }
 
 /**
@@ -34,7 +34,7 @@ export function BillingProvider({
   client,
 }: BillingProviderProps) {
   const billingClient = useMemo(
-    () => client ?? new FlexpriceClient(options),
+    () => client ?? new TirdadClient(options),
     [client, options],
   );
 
@@ -46,15 +46,15 @@ export function BillingProvider({
 }
 
 /**
- * Access the FlexpriceClient from context.
+ * Access the TirdadClient from context.
  * Must be called within a <BillingProvider>.
  */
-export function useBillingClient(): FlexpriceClient {
+export function useBillingClient(): TirdadClient {
   const client = useContext(BillingContext);
   if (!client) {
     throw new Error(
       "useBillingClient must be used within a <BillingProvider>. " +
-        "Wrap your component tree with <BillingProvider> from @flexprice/billing/react.",
+        "Wrap your component tree with <BillingProvider> from @tirdad/billing/react.",
     );
   }
   return client;

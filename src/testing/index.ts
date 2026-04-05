@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing/testing — Mock Billing Instance
+ * @tirdad/billing/testing — Mock Billing Instance
  *
  * In-memory mock for unit testing and Storybook development.
  * Mirrors the BillingInstance interface without hitting real APIs.
@@ -12,7 +12,7 @@ import type {
   FeatureUsageResult,
   TrackUsageParams,
   CheckoutParams,
-  FlexpriceBillingConfig,
+  TirdadBillingConfig,
 } from "../types.js";
 import type { BillingInstance } from "../index.js";
 import type { ResolvedCustomer } from "../auth.js";
@@ -37,7 +37,7 @@ export interface MockBillingOptions {
  * Create a mock billing instance for testing.
  * All methods return predictable data from the options.
  */
-export function MockFlexpriceBilling(
+export function MockTirdadBilling(
   options: MockBillingOptions = {},
 ): BillingInstance {
   const trackedEvents: TrackUsageParams[] = [];
@@ -54,7 +54,7 @@ export function MockFlexpriceBilling(
   return {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sdk: {} as any,
-    config: {} as FlexpriceBillingConfig,
+    config: {} as TirdadBillingConfig,
 
     async resolveCustomer(_actor: BillingActor): Promise<ResolvedCustomer> {
       return {
@@ -229,7 +229,7 @@ export function MockFlexpriceBilling(
 export const webhookFixtures = {
   /**
    * Create a mock webhook payload.
-   * Does NOT generate a real Svix signature — use with MockFlexpriceBilling only.
+   * Does NOT generate a real Svix signature — use with MockTirdadBilling only.
    */
   create(
     eventType: string,

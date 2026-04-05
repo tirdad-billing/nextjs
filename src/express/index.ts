@@ -1,15 +1,15 @@
 /**
- * @flexprice/billing/express — Express Adapter
+ * @tirdad/billing/express — Express Adapter
  *
  * Mounts billing routes on an Express router.
  *
  * Usage:
  * ```ts
  * import express from "express";
- * import { FlexpriceBillingExpress } from "@flexprice/billing/express";
+ * import { TirdadBillingExpress } from "@tirdad/billing/express";
  *
  * const app = express();
- * app.use("/api/billing", FlexpriceBillingExpress({ config, auth }));
+ * app.use("/api/billing", TirdadBillingExpress({ config, auth }));
  * ```
  */
 
@@ -17,7 +17,7 @@ import {
   createBillingInstance,
   type BillingInstance,
 } from "../index.js";
-import type { FlexpriceBillingConfig, BillingActor } from "../types.js";
+import type { TirdadBillingConfig, BillingActor } from "../types.js";
 import { BillingCoreError } from "../errors.js";
 
 /**
@@ -46,17 +46,17 @@ type ExpressRouter = (
   next: ExpressNextFunction,
 ) => void;
 
-export interface FlexpriceBillingExpressOptions extends FlexpriceBillingConfig {}
+export interface TirdadBillingExpressOptions extends TirdadBillingConfig {}
 
 /**
  * Create an Express router that mounts all billing routes.
  *
  * ```ts
- * app.use("/api/billing", FlexpriceBillingExpress(config));
+ * app.use("/api/billing", TirdadBillingExpress(config));
  * ```
  */
-export function FlexpriceBillingExpress(
-  config: FlexpriceBillingExpressOptions,
+export function TirdadBillingExpress(
+  config: TirdadBillingExpressOptions,
 ): ExpressRouter {
   const billing: BillingInstance = createBillingInstance(config);
 
@@ -201,7 +201,7 @@ export function FlexpriceBillingExpress(
 // ── Helpers ────────────────────────────────────────
 
 async function resolveActor(
-  config: FlexpriceBillingConfig,
+  config: TirdadBillingConfig,
   req: ExpressRequest,
 ): Promise<BillingActor> {
   // Express req is not a standard Request, but we adapt for the auth bridge

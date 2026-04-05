@@ -1,6 +1,6 @@
-# @flexprice/billing
+# @tirdad/billing
 
-> Universal billing integration layer for [Flexprice](https://flexprice.io). Works with **Next.js**, **Express**, **React**, and any JavaScript/TypeScript framework.
+> Universal billing integration layer for [Tirdad](https://tirdad.io). Works with **Next.js**, **Express**, **React**, and any JavaScript/TypeScript framework.
 
 [![Tests](https://img.shields.io/badge/tests-71%2F71-brightgreen)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)]()
@@ -8,7 +8,7 @@
 
 ## Why
 
-- **One config** — Wire up Flexprice in 5 minutes, not 5 days
+- **One config** — Wire up Tirdad in 5 minutes, not 5 days
 - **Framework agnostic** — Core logic works everywhere; adapters for Next.js and Express
 - **Type-safe** — Strict TypeScript with custom error classes and SDK enums
 - **Security first** — Svix webhook verification with replay protection
@@ -17,14 +17,14 @@
 ## Install
 
 ```bash
-npm install @flexprice/billing @flexprice/sdk
+npm install @tirdad/billing @flexprice/sdk
 ```
 
 **Peer dependencies:**
 
 | Package | When needed |
 |---|---|
-| `react` ≥ 18 | `@flexprice/billing/react` |
+| `react` ≥ 18 | `@tirdad/billing/react` |
 | `svix` ≥ 1 | Webhook verification (auto-installed) |
 
 ## Quick Start
@@ -33,14 +33,14 @@ npm install @flexprice/billing @flexprice/sdk
 
 ```ts
 // lib/billing.ts
-import { FlexpriceBilling } from "@flexprice/billing/next";
+import { TirdadBilling } from "@tirdad/billing/next";
 import { auth } from "@/lib/auth";
 
-export const billing = FlexpriceBilling({
+export const billing = TirdadBilling({
   config: {
-    apiUrl: process.env.FLEXPRICE_API_URL!,
-    apiKey: process.env.FLEXPRICE_API_KEY!,
-    webhookSecret: process.env.FLEXPRICE_WEBHOOK_SECRET!,
+    apiUrl: process.env.TIRDAD_API_URL!,
+    apiKey: process.env.TIRDAD_API_KEY!,
+    webhookSecret: process.env.TIRDAD_WEBHOOK_SECRET!,
   },
   auth: {
     resolveActor: async (req) => {
@@ -84,21 +84,21 @@ That's it. You now have 11 API routes auto-mounted:
 | GET | `/api/billing/usage/summary` | Get usage summary |
 | GET | `/api/billing/invoices` | List invoices |
 | POST | `/api/billing/coupons/validate` | Validate a coupon code |
-| POST | `/api/billing/webhook` | Receive Flexprice webhooks |
+| POST | `/api/billing/webhook` | Receive Tirdad webhooks |
 
 ### Express
 
 ```ts
 import express from "express";
-import { FlexpriceBillingExpress } from "@flexprice/billing/express";
+import { TirdadBillingExpress } from "@tirdad/billing/express";
 
 const app = express();
 
-app.use("/api/billing", FlexpriceBillingExpress({
+app.use("/api/billing", TirdadBillingExpress({
   config: {
-    apiUrl: process.env.FLEXPRICE_API_URL!,
-    apiKey: process.env.FLEXPRICE_API_KEY!,
-    webhookSecret: process.env.FLEXPRICE_WEBHOOK_SECRET!,
+    apiUrl: process.env.TIRDAD_API_URL!,
+    apiKey: process.env.TIRDAD_API_KEY!,
+    webhookSecret: process.env.TIRDAD_WEBHOOK_SECRET!,
   },
   auth: {
     resolveActor: async (req) => {
@@ -118,10 +118,10 @@ app.listen(3000);
 Wrap your app with `<BillingProvider>`:
 
 ```tsx
-import { BillingProvider } from "@flexprice/billing/react";
-import { FlexpriceClient } from "@flexprice/billing/client";
+import { BillingProvider } from "@tirdad/billing/react";
+import { TirdadClient } from "@tirdad/billing/client";
 
-const client = new FlexpriceClient({ basePath: "/api/billing" });
+const client = new TirdadClient({ basePath: "/api/billing" });
 
 function App() {
   return (
@@ -142,7 +142,7 @@ import {
   useHasFeature,
   useUsage,
   useInvoices,
-} from "@flexprice/billing/react";
+} from "@tirdad/billing/react";
 
 // Plans
 const { plans, isLoading } = usePlans({ currency: "USD" });
@@ -164,7 +164,7 @@ const { invoices, total } = useInvoices({ limit: 10 });
 ### Components
 
 ```tsx
-import { FeatureGate, UsageBar } from "@flexprice/billing/react";
+import { FeatureGate, UsageBar } from "@tirdad/billing/react";
 
 // Conditionally render based on entitlements (UX only — always enforce server-side)
 <FeatureGate feature="advanced_reports" fallback={<UpgradePrompt />}>
@@ -290,13 +290,13 @@ export const GET = billing.trackUsageMiddleware("api_call", async (req) => {
 Enable in-memory caching to reduce API calls:
 
 ```ts
-const billing = FlexpriceBilling({
+const billing = TirdadBilling({
   // ... config
   entitlementCache: true, // 60s TTL, 500 max entries
 });
 
 // Or configure:
-const billing = FlexpriceBilling({
+const billing = TirdadBilling({
   // ... config
   entitlementCache: {
     ttlMs: 30_000,    // 30 seconds
@@ -328,9 +328,9 @@ Verification is handled automatically via [Svix](https://svix.com) with replay p
 Use the mock for unit tests:
 
 ```ts
-import { MockFlexpriceBilling, webhookFixtures } from "@flexprice/billing/testing";
+import { MockTirdadBilling, webhookFixtures } from "@tirdad/billing/testing";
 
-const billing = MockFlexpriceBilling();
+const billing = MockTirdadBilling();
 
 // All methods return safe defaults
 const plans = await billing.getPlans();           // []
@@ -347,19 +347,19 @@ const { body, headers } = webhookFixtures.create("subscription.created", {
 
 | Import | Purpose | Environment |
 |---|---|---|
-| `@flexprice/billing` | Core factory (26 methods) | Server |
-| `@flexprice/billing/next` | Next.js App Router adapter | Server |
-| `@flexprice/billing/express` | Express adapter | Server |
-| `@flexprice/billing/client` | Browser fetch client | Browser |
-| `@flexprice/billing/react` | 7 hooks + 2 components | Browser |
-| `@flexprice/billing/testing` | Mock + webhook fixtures | Test |
+| `@tirdad/billing` | Core factory (26 methods) | Server |
+| `@tirdad/billing/next` | Next.js App Router adapter | Server |
+| `@tirdad/billing/express` | Express adapter | Server |
+| `@tirdad/billing/client` | Browser fetch client | Browser |
+| `@tirdad/billing/react` | 7 hooks + 2 components | Browser |
+| `@tirdad/billing/testing` | Mock + webhook fixtures | Test |
 
 ## Configuration
 
 ```ts
-interface FlexpriceBillingConfig {
+interface TirdadBillingConfig {
   config: {
-    apiUrl: string;       // Flexprice API URL
+    apiUrl: string;       // Tirdad API URL
     apiKey: string;       // API key
     webhookSecret: string; // Svix webhook secret
     timeout?: number;     // Request timeout in ms (default: 10000)
@@ -379,7 +379,7 @@ interface FlexpriceBillingConfig {
     tolerance?: number;   // Svix time tolerance
   };
   entitlementCache?: boolean | { ttlMs?: number; maxEntries?: number };
-  on?: FlexpriceCallbacks;
+  on?: TirdadCallbacks;
 }
 ```
 

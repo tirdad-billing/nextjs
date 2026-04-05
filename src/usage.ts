@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Usage Module
+ * @tirdad/billing — Usage Module
  *
  * Usage event ingestion + real-time usage summary queries.
  * Wraps SDK events.createEvent() and customers.getCustomerUsageSummary().
@@ -10,7 +10,7 @@ import type { TrackUsageParams, FeatureUsageResult } from "./types.js";
 import { BillingCoreError } from "./errors.js";
 
 /**
- * Ingest a usage event into Flexprice.
+ * Ingest a usage event into Tirdad.
  * Requires an idempotencyKey (enforced at the type level and runtime).
  */
 export async function trackUsage(

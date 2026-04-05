@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Subscriptions Module
+ * @tirdad/billing — Subscriptions Module
  *
  * Subscription lifecycle helpers: query, cancel, pause, resume.
  * Wraps SDK subscriptions.* methods.

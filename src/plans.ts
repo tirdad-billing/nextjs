@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Plans Module
+ * @tirdad/billing — Plans Module
  *
  * Plan catalog helpers: getPlans, getPlan.
  * Wraps SDK plans.queryPlan() and plans.getPlan().
@@ -17,7 +17,7 @@ export interface GetPlansOptions {
 }
 
 /**
- * Fetch all plans from Flexprice, transformed into the BillingPlan shape.
+ * Fetch all plans from Tirdad, transformed into the BillingPlan shape.
  */
 export async function getPlans(
   sdk: Flexprice,

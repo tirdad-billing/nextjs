@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
-  MockFlexpriceBilling,
+  MockTirdadBilling,
   webhookFixtures,
 } from "../src/testing/index.js";
 
-describe("MockFlexpriceBilling", () => {
+describe("MockTirdadBilling", () => {
   it("returns configured plans", async () => {
-    const billing = MockFlexpriceBilling({
+    const billing = MockTirdadBilling({
       plans: [
         {
           id: "plan_001",
@@ -34,7 +34,7 @@ describe("MockFlexpriceBilling", () => {
   });
 
   it("resolves customers with actor data", async () => {
-    const billing = MockFlexpriceBilling();
+    const billing = MockTirdadBilling();
     const customer = await billing.resolveCustomer({
       externalId: "user_123",
       email: "user@test.com",
@@ -44,7 +44,7 @@ describe("MockFlexpriceBilling", () => {
   });
 
   it("checks entitlements from config", async () => {
-    const billing = MockFlexpriceBilling({
+    const billing = MockTirdadBilling({
       entitlements: { advanced_reports: true, api_calls: false },
     });
 
@@ -54,7 +54,7 @@ describe("MockFlexpriceBilling", () => {
   });
 
   it("tracks usage events", async () => {
-    const billing = MockFlexpriceBilling();
+    const billing = MockTirdadBilling();
     await billing.trackUsage({
       externalId: "user_1",
       eventName: "api_call",
@@ -65,7 +65,7 @@ describe("MockFlexpriceBilling", () => {
   });
 
   it("returns usage data from config", async () => {
-    const billing = MockFlexpriceBilling({
+    const billing = MockTirdadBilling({
       usage: {
         api_calls: { currentUsage: 42, totalLimit: 100 },
         storage: { currentUsage: 0, totalLimit: 0, isUnlimited: true },
@@ -82,7 +82,7 @@ describe("MockFlexpriceBilling", () => {
   });
 
   it("returns checkout URL", async () => {
-    const billing = MockFlexpriceBilling();
+    const billing = MockTirdadBilling();
     const result = await billing.checkout(
       { externalId: "user_1" },
       { planId: "plan_pro" },
@@ -92,7 +92,7 @@ describe("MockFlexpriceBilling", () => {
   });
 
   it("throws configured checkout errors", async () => {
-    const billing = MockFlexpriceBilling({
+    const billing = MockTirdadBilling({
       checkoutError: new Error("Payment required"),
     });
 

@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing/react — FeatureGate component
+ * @tirdad/billing/react — FeatureGate component
  *
  * Conditionally renders children based on entitlement.
  * WARNING: This is UX only, NOT security. Enforce server-side with requireFeature().

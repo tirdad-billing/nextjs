@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Core Types
+ * @tirdad/billing — Core Types
  *
  * All type definitions for the Billing Core integration layer.
  * SDK types (DtoCustomerResponse, etc.) are re-exported from @flexprice/sdk.
@@ -12,7 +12,7 @@
  * Returned by `resolveActor()` in the auth bridge configuration.
  */
 export type BillingActor = {
-  /** Maps to Flexprice customer.externalId. REQUIRED. */
+  /** Maps to Tirdad customer.externalId. REQUIRED. */
   externalId: string;
   /** Whether this actor represents a user or an organization. Defaults to "user". */
   type?: "user" | "organization";
@@ -20,7 +20,7 @@ export type BillingActor = {
   email?: string;
   /** Display name for the customer record. */
   name?: string;
-  /** Arbitrary metadata passed to Flexprice customer.metadata. */
+  /** Arbitrary metadata passed to Tirdad customer.metadata. */
   metadata?: Record<string, string>;
   /** Preferred currency for pricing display and checkout (e.g. "USD", "SAR"). */
   currency?: string;
@@ -32,8 +32,8 @@ export type BillingActor = {
  * Base context shared by all webhook callbacks.
  */
 export type WebhookContext = {
-  /** The Flexprice customer this event relates to */
-  customer: FlexpriceCustomerInfo;
+  /** The Tirdad customer this event relates to */
+  customer: TirdadCustomerInfo;
   /** The raw event type string */
   eventType: string;
   /** Svix message ID (used for idempotency) */
@@ -43,7 +43,7 @@ export type WebhookContext = {
 };
 
 /** Minimal customer info extracted from webhook payloads. */
-export type FlexpriceCustomerInfo = {
+export type TirdadCustomerInfo = {
   id: string;
   externalId: string;
   email: string;
@@ -51,7 +51,7 @@ export type FlexpriceCustomerInfo = {
 };
 
 /** Subscription data from webhook payloads. */
-export type FlexpriceSubscriptionInfo = {
+export type TirdadSubscriptionInfo = {
   id: string;
   customerId: string;
   planId: string;
@@ -62,7 +62,7 @@ export type FlexpriceSubscriptionInfo = {
 };
 
 /** Invoice data from webhook payloads. */
-export type FlexpriceInvoiceInfo = {
+export type TirdadInvoiceInfo = {
   id: string;
   customerId: string;
   status: string;
@@ -71,7 +71,7 @@ export type FlexpriceInvoiceInfo = {
 };
 
 /** Wallet data from webhook payloads. */
-export type FlexpriceWalletInfo = {
+export type TirdadWalletInfo = {
   id: string;
   customerId: string;
   balance: number;
@@ -79,12 +79,12 @@ export type FlexpriceWalletInfo = {
 };
 
 // Per-event payload types
-type SubscriptionPayload = { subscription: FlexpriceSubscriptionInfo };
-type InvoicePayload = { invoice: FlexpriceInvoiceInfo };
-type PaymentPayload = { invoice: FlexpriceInvoiceInfo; attemptCount: number };
+type SubscriptionPayload = { subscription: TirdadSubscriptionInfo };
+type InvoicePayload = { invoice: TirdadInvoiceInfo };
+type PaymentPayload = { invoice: TirdadInvoiceInfo; attemptCount: number };
 type CustomerPayload = Record<string, never>; // customer is already in WebhookContext
 type WalletPayload = {
-  wallet: FlexpriceWalletInfo;
+  wallet: TirdadWalletInfo;
   amount: number;
   currency: string;
 };
@@ -93,7 +93,7 @@ type WalletPayload = {
  * The event map that drives IntelliSense for webhook callbacks.
  * Each key is an event name, each value is the full callback context type.
  */
-export interface FlexpriceEventMap {
+export interface TirdadEventMap {
   "subscription.created": WebhookContext & SubscriptionPayload;
   "subscription.updated": WebhookContext & SubscriptionPayload;
   "subscription.canceled": WebhookContext & SubscriptionPayload;
@@ -111,12 +111,12 @@ export interface FlexpriceEventMap {
 }
 
 /** All known webhook event names. */
-export type FlexpriceEventName = keyof FlexpriceEventMap;
+export type TirdadEventName = keyof TirdadEventMap;
 
 /** Callback function type for a specific event. */
-export type FlexpriceCallbacks = {
-  [K in keyof FlexpriceEventMap]?: (
-    ctx: FlexpriceEventMap[K],
+export type TirdadCallbacks = {
+  [K in keyof TirdadEventMap]?: (
+    ctx: TirdadEventMap[K],
   ) => void | Promise<void>;
 };
 
@@ -209,9 +209,9 @@ export interface MinimalLogger {
 
 // ─── Main Configuration ───────────────────────────────────────
 
-/** Flexprice connection configuration. */
-export interface FlexpriceConnectionConfig {
-  /** Flexprice API base URL (e.g. "https://billing.yourapp.com/v1") */
+/** Tirdad connection configuration. */
+export interface TirdadConnectionConfig {
+  /** Tirdad API base URL (e.g. "https://billing.yourapp.com/v1") */
   apiUrl: string;
   /** API key for server-to-server auth */
   apiKey: string;
@@ -239,15 +239,15 @@ export interface CheckoutConfig {
   cancelUrl: string;
 }
 
-/** Full FlexpriceBilling initialization options. */
-export interface FlexpriceBillingConfig {
-  config: FlexpriceConnectionConfig;
+/** Full TirdadBilling initialization options. */
+export interface TirdadBillingConfig {
+  config: TirdadConnectionConfig;
   auth: AuthConfig;
   checkout?: CheckoutConfig;
   routes?: RouteConfig;
   webhooks?: WebhookConfig;
   observability?: ObservabilityConfig;
-  on?: FlexpriceCallbacks;
+  on?: TirdadCallbacks;
   /**
    * Enable in-memory caching for entitlement checks.
    * Set to `true` for defaults (60s TTL, 500 max entries),

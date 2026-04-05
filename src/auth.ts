@@ -1,7 +1,7 @@
 /**
- * @flexprice/billing — Auth Bridge & Customer Resolver
+ * @tirdad/billing — Auth Bridge & Customer Resolver
  *
- * Maps application users (BillingActor) to Flexprice customers.
+ * Maps application users (BillingActor) to Tirdad customers.
  * Uses create-or-fetch pattern (race-safe, no TOCTOU window).
  */
 
@@ -9,7 +9,7 @@ import type { Flexprice } from "@flexprice/sdk";
 import type { BillingActor, MinimalLogger } from "./types.js";
 import { BillingCoreError } from "./errors.js";
 
-/** Resolved Flexprice customer with the fields we need. */
+/** Resolved Tirdad customer with the fields we need. */
 export interface ResolvedCustomer {
   id: string;
   externalId: string;
@@ -18,7 +18,7 @@ export interface ResolvedCustomer {
 }
 
 /**
- * Resolve a BillingActor to a Flexprice customer.
+ * Resolve a BillingActor to a Tirdad customer.
  *
  * Strategy: create-then-catch-409
  * 1. Attempt to create a customer with the actor's externalId
@@ -59,7 +59,7 @@ export async function resolveCustomer(
     });
 
     logger?.info(
-      `[billing] Created Flexprice customer for externalId=${actor.externalId}`,
+      `[billing] Created Tirdad customer for externalId=${actor.externalId}`,
     );
 
     return mapCustomerResponse(created);
@@ -86,7 +86,7 @@ export async function resolveCustomer(
 
     throw new BillingCoreError(
       "CUSTOMER_CREATION_FAILED",
-      `Failed to create Flexprice customer for externalId "${actor.externalId}"`,
+      `Failed to create Tirdad customer for externalId "${actor.externalId}"`,
       { cause: err },
     );
   }

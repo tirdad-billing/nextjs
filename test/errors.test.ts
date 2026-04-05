@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { BillingCoreError, FlexpriceClientError } from "../src/errors.js";
+import { BillingCoreError, TirdadClientError } from "../src/errors.js";
 
 describe("BillingCoreError", () => {
   it("creates error with correct properties", () => {
@@ -58,18 +58,18 @@ describe("BillingCoreError", () => {
   });
 });
 
-describe("FlexpriceClientError", () => {
+describe("TirdadClientError", () => {
   it("creates error with correct properties", () => {
-    const err = new FlexpriceClientError(404, "Not found", "PLAN_NOT_FOUND");
-    expect(err.name).toBe("FlexpriceClientError");
+    const err = new TirdadClientError(404, "Not found", "PLAN_NOT_FOUND");
+    expect(err.name).toBe("TirdadClientError");
     expect(err.status).toBe(404);
     expect(err.message).toBe("Not found");
     expect(err.code).toBe("PLAN_NOT_FOUND");
   });
 
   it("is instanceof Error", () => {
-    const err = new FlexpriceClientError(500, "test");
+    const err = new TirdadClientError(500, "test");
     expect(err instanceof Error).toBe(true);
-    expect(err instanceof FlexpriceClientError).toBe(true);
+    expect(err instanceof TirdadClientError).toBe(true);
   });
 });

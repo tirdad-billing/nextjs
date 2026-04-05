@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing/react — usePlans hook
+ * @tirdad/billing/react — usePlans hook
  */
 "use client";
 

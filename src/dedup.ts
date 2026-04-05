@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Webhook Deduplication Store
+ * @tirdad/billing — Webhook Deduplication Store
  *
  * In-memory implementation with TTL for single-instance servers.
  * For serverless/multi-instance, provide a custom DedupStore (Redis, DynamoDB).

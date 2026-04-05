@@ -1,8 +1,8 @@
 /**
- * @flexprice/billing — Error Handling
+ * @tirdad/billing — Error Handling
  *
  * Structured error types for the Billing Core integration layer.
- * SDK-level errors (Flexprice API 4xx/5xx) pass through unchanged.
+ * SDK-level errors (Tirdad API 4xx/5xx) pass through unchanged.
  */
 
 /** All error codes produced by the Billing Core (not the SDK). */
@@ -20,7 +20,7 @@ export type BillingCoreErrorCode =
 /**
  * Structured error thrown by the Billing Core.
  *
- * SDK errors (Flexprice API failures) are passed through with their original
+ * SDK errors (Tirdad API failures) are passed through with their original
  * error type. This class is only for errors originated by the integration layer.
  */
 export class BillingCoreError extends Error {
@@ -72,13 +72,13 @@ function errorCodeToStatus(code: BillingCoreErrorCode): number {
 /**
  * Structured error for the browser-side client SDK.
  */
-export class FlexpriceClientError extends Error {
+export class TirdadClientError extends Error {
   public readonly status: number;
   public readonly code?: string;
 
   constructor(status: number, message: string, code?: string) {
     super(message);
-    this.name = "FlexpriceClientError";
+    this.name = "TirdadClientError";
     this.status = status;
     this.code = code;
   }

@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing/next — Next.js App Router Adapter
+ * @tirdad/billing/next — Next.js App Router Adapter
  *
  * Auto-mounts billing routes under basePath (default: /api/billing).
  * Integration is a single catch-all route handler.
@@ -10,7 +10,7 @@
 type NextRequest = Request & { nextUrl?: URL };
 import { createBillingInstance } from "./index.js";
 import type {
-  FlexpriceBillingConfig,
+  TirdadBillingConfig,
   BillingActor,
 } from "./types.js";
 import { BillingCoreError } from "./errors.js";
@@ -19,10 +19,10 @@ import { matchRoute } from "./router.js";
 export type { BillingInstance } from "./index.js";
 
 /**
- * Create a FlexpriceBilling instance with Next.js-specific route handling.
+ * Create a TirdadBilling instance with Next.js-specific route handling.
  * Returns both the billing instance and the route handler.
  */
-export function FlexpriceBilling(config: FlexpriceBillingConfig) {
+export function TirdadBilling(config: TirdadBillingConfig) {
   const billing = createBillingInstance(config);
   const logger = config.observability?.logger ?? console;
 
@@ -140,11 +140,11 @@ export function FlexpriceBilling(config: FlexpriceBillingConfig) {
   }
 
   async function handlePortal(actor: BillingActor): Promise<Response> {
-    // Resolve customer to get their Flexprice ID for the portal
+    // Resolve customer to get their Tirdad ID for the portal
     const customer = await billing.resolveCustomer(actor);
 
-    // Portal URL pattern — Flexprice's existing customer portal
-    // The URL construction depends on Flexprice's portal endpoint
+    // Portal URL pattern — Tirdad's existing customer portal
+    // The URL construction depends on Tirdad's portal endpoint
     const portalUrl = `${config.config.apiUrl}/portal/customer/${customer.id}`;
 
     return Response.json({ url: portalUrl, customerId: customer.id });
@@ -364,5 +364,5 @@ export function FlexpriceBilling(config: FlexpriceBillingConfig) {
 }
 
 // Re-export everything from index for convenience
-export { createBillingInstance, BillingCoreError, FlexpriceClientError, formatPrice } from "./index.js";
+export { createBillingInstance, BillingCoreError, TirdadClientError, formatPrice } from "./index.js";
 export type * from "./types.js";

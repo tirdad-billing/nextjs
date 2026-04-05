@@ -1,20 +1,20 @@
 /**
- * @flexprice/billing — Webhook Handler
+ * @tirdad/billing — Webhook Handler
  *
  * Svix signature verification + deduplication + typed callback dispatch.
  */
 
 import { Webhook } from "svix";
 import type {
-  FlexpriceCallbacks,
-  FlexpriceEventName,
+  TirdadCallbacks,
+  TirdadEventName,
   WebhookConfig,
   DedupStore,
   MinimalLogger,
-  FlexpriceCustomerInfo,
-  FlexpriceSubscriptionInfo,
-  FlexpriceInvoiceInfo,
-  FlexpriceWalletInfo,
+  TirdadCustomerInfo,
+  TirdadSubscriptionInfo,
+  TirdadInvoiceInfo,
+  TirdadWalletInfo,
 } from "./types.js";
 import { BillingCoreError } from "./errors.js";
 import { InMemoryDedupStore } from "./dedup.js";
@@ -38,13 +38,13 @@ const KNOWN_EVENTS = new Set<string>([
 ]);
 
 /**
- * Maps Flexprice's actual webhook event type strings to our normalized event names.
+ * Maps Tirdad's actual webhook event type strings to our normalized event names.
  * The SDK emits events like "subscription.cancelled" (British spelling) etc.
  */
-const EVENT_ALIASES: Record<string, FlexpriceEventName> = {
-  // Flexprice uses British "cancelled", we normalize to American "canceled"
+const EVENT_ALIASES: Record<string, TirdadEventName> = {
+  // Tirdad uses British "cancelled", we normalize to American "canceled"
   "subscription.cancelled": "subscription.canceled",
-  // Flexprice may send more specific sub-events
+  // Tirdad may send more specific sub-events
   "subscription.activated": "subscription.created",
   "invoice.update.finalized": "invoice.finalized",
   "invoice.update.payment": "invoice.paid",
@@ -55,7 +55,7 @@ const EVENT_ALIASES: Record<string, FlexpriceEventName> = {
 
 export interface WebhookHandlerOptions {
   secret: string;
-  callbacks?: FlexpriceCallbacks;
+  callbacks?: TirdadCallbacks;
   webhookConfig?: WebhookConfig;
   logger?: MinimalLogger;
   onWebhook?: (event: {
@@ -180,11 +180,11 @@ export function createWebhookHandler(options: WebhookHandlerOptions) {
 }
 
 /**
- * Normalize a raw event type string to a known FlexpriceEventName.
+ * Normalize a raw event type string to a known TirdadEventName.
  * Returns null if the event is not recognized.
  */
-function normalizeEventType(raw: string): FlexpriceEventName | null {
-  if (KNOWN_EVENTS.has(raw)) return raw as FlexpriceEventName;
+function normalizeEventType(raw: string): TirdadEventName | null {
+  if (KNOWN_EVENTS.has(raw)) return raw as TirdadEventName;
   if (raw in EVENT_ALIASES) return EVENT_ALIASES[raw];
   return null;
 }
@@ -194,7 +194,7 @@ function normalizeEventType(raw: string): FlexpriceEventName | null {
  */
 function extractCustomerInfo(
   payload: Record<string, unknown>,
-): FlexpriceCustomerInfo {
+): TirdadCustomerInfo {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data = (payload.data ?? payload) as any;
   const customer = data.customer ?? data;
@@ -212,9 +212,9 @@ function extractCustomerInfo(
  * Build the full typed callback context for a given event.
  */
 function buildCallbackContext(
-  eventType: FlexpriceEventName,
+  eventType: TirdadEventName,
   payload: Record<string, unknown>,
-  customer: FlexpriceCustomerInfo,
+  customer: TirdadCustomerInfo,
   messageId: string,
 ): Record<string, unknown> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -265,7 +265,7 @@ function buildCallbackContext(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractSubscriptionInfo(data: any): FlexpriceSubscriptionInfo {
+function extractSubscriptionInfo(data: any): TirdadSubscriptionInfo {
   const sub = data.subscription ?? data;
   return {
     id: sub.id ?? sub.subscription_id ?? "",
@@ -281,7 +281,7 @@ function extractSubscriptionInfo(data: any): FlexpriceSubscriptionInfo {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractInvoiceInfo(data: any): FlexpriceInvoiceInfo {
+function extractInvoiceInfo(data: any): TirdadInvoiceInfo {
   const inv = data.invoice ?? data;
   return {
     id: inv.id ?? inv.invoice_id ?? "",
@@ -293,7 +293,7 @@ function extractInvoiceInfo(data: any): FlexpriceInvoiceInfo {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractWalletInfo(data: any): FlexpriceWalletInfo {
+function extractWalletInfo(data: any): TirdadWalletInfo {
   const w = data.wallet ?? data;
   return {
     id: w.id ?? w.wallet_id ?? "",

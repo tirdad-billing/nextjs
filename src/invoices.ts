@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Invoices Module
+ * @tirdad/billing — Invoices Module
  *
  * Invoice listing and retrieval helpers.
  */

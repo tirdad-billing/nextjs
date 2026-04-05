@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Coupons Module
+ * @tirdad/billing — Coupons Module
  *
  * Coupon validation and retrieval helpers.
  */

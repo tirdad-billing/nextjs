@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Route Matching Engine
+ * @tirdad/billing — Route Matching Engine
  *
  * Framework-agnostic route matcher that maps incoming requests
  * to billing handlers based on RouteKey configuration.
@@ -37,7 +37,7 @@ const ROUTE_DEFINITIONS: Array<{
  *
  * @param method - HTTP method
  * @param pathname - Full request pathname (e.g. "/api/billing/plans")
- * @param routeConfig - Route configuration from FlexpriceBilling
+ * @param routeConfig - Route configuration from TirdadBilling
  * @returns The matched route, or null if no match
  */
 export function matchRoute(

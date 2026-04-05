@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing/react — UsageBar component
+ * @tirdad/billing/react — UsageBar component
  *
  * Visual progress bar showing feature usage against limits.
  * Renders inline SVG — no CSS framework required.

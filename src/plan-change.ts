@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Plan Change Module
+ * @tirdad/billing — Plan Change Module
  *
  * Proration preview and plan change execution helpers.
  */

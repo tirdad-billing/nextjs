@@ -1,5 +1,5 @@
 /**
- * @flexprice/billing — Entitlement Cache
+ * @tirdad/billing — Entitlement Cache
  *
  * In-memory LRU-ish cache with TTL to reduce API calls on
  * checkFeature() and hasAccess().

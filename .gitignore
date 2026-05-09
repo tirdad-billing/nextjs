@@ -5,3 +5,4 @@ dist/
 .env.local
 .env.test
 coverage/
+pnpm-lock.yaml

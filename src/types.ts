@@ -242,7 +242,7 @@ export interface CheckoutConfig {
 /** Full TirdadBilling initialization options. */
 export interface TirdadBillingConfig {
   config: TirdadConnectionConfig;
-  auth: AuthConfig;
+  auth?: AuthConfig;
   checkout?: CheckoutConfig;
   routes?: RouteConfig;
   webhooks?: WebhookConfig;
@@ -323,7 +323,8 @@ export interface FeatureUsageResult {
 export interface TrackUsageParams {
   externalId: string;
   eventName: string;
-  quantity: number;
+  /** Number of units consumed. Defaults to 1 if omitted. */
+  quantity?: number;
   idempotencyKey: string;
   properties?: Record<string, string>;
   timestamp?: Date;

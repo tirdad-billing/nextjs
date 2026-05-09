@@ -20,6 +20,10 @@ import type { ResolvedCustomer } from "../auth.js";
 export interface MockBillingOptions {
   /** Pre-loaded plans for getPlans(). */
   plans?: BillingPlan[];
+  /** Pre-loaded subscriptions for getSubscriptions(). */
+  subscriptions?: any[];
+  /** Pre-loaded invoices for getInvoices(). */
+  invoices?: any[];
   /** Pre-loaded entitlements: { featureLookupKey: isEnabled } */
   entitlements?: Record<string, boolean>;
   /** Pre-loaded usage: { featureLookupKey: { current, limit } } */
@@ -83,7 +87,7 @@ export function MockTirdadBilling(
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getEntitlements(): Promise<any> {
-      return { features: options.entitlements ?? {} };
+      return options.entitlements ?? {};
     },
 
     async checkFeature(
@@ -165,27 +169,19 @@ export function MockTirdadBilling(
     },
 
     async getSubscriptions() {
-      return [];
+      return { subscriptions: options.subscriptions ?? [], total: options.subscriptions?.length ?? 0 } as any;
     },
 
     async getPrimarySubscription() {
-      return null;
+      return options.subscriptions?.[0] ?? null;
     },
 
     async cancelSubscription() {
       // no-op in mock
     },
 
-    async pauseSubscription() {
-      // no-op in mock
-    },
-
-    async resumeSubscription() {
-      // no-op in mock
-    },
-
     async getInvoices() {
-      return { invoices: [], total: 0 };
+      return { invoices: options.invoices ?? [], total: options.invoices?.length ?? 0 } as any;
     },
 
     async getInvoice() {

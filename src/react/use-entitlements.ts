@@ -3,9 +3,9 @@
  */
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import type { EntitlementCheckResult } from "../types.js";
 import { useBillingClient } from "./provider.jsx";
-import { useAsync } from "./use-async.js";
 
 export interface UseEntitlementsResult {
   entitlements: unknown;
@@ -23,10 +23,10 @@ export interface UseEntitlementsResult {
  */
 export function useEntitlements(): UseEntitlementsResult {
   const client = useBillingClient();
-  const { data, isLoading, error, refetch } = useAsync(
-    () => client.getEntitlements(),
-    [],
-  );
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["tirdad", "entitlements"],
+    queryFn: () => client.getEntitlements(),
+  });
 
   return {
     entitlements: data,
@@ -55,10 +55,10 @@ export interface UseHasFeatureResult {
  */
 export function useHasFeature(lookupKey: string): UseHasFeatureResult {
   const client = useBillingClient();
-  const { data, isLoading, error, refetch } = useAsync(
-    () => client.checkFeature(lookupKey),
-    [lookupKey],
-  );
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["tirdad", "feature", lookupKey],
+    queryFn: () => client.checkFeature(lookupKey),
+  });
 
   return {
     hasAccess: data?.isEnabled ?? false,

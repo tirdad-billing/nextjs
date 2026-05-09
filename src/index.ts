@@ -37,8 +37,6 @@ import {
   getSubscriptions as getSubscriptionsHelper,
   getPrimarySubscription,
   cancelSubscription as cancelSubscriptionHelper,
-  pauseSubscription as pauseSubscriptionHelper,
-  resumeSubscription as resumeSubscriptionHelper,
 } from "./subscriptions.js";
 import {
   getInvoices as getInvoicesHelper,
@@ -113,18 +111,10 @@ export interface BillingInstance {
   getSubscriptions(externalId: string): Promise<BillingSubscription[]>;
   /** Get the primary (active) subscription. */
   getPrimarySubscription(externalId: string): Promise<BillingSubscription | null>;
-  /** Cancel a subscription. */
   cancelSubscription(
     subscriptionId: string,
     options?: { cancelAtPeriodEnd?: boolean },
   ): Promise<void>;
-  /** Pause a subscription. */
-  pauseSubscription(
-    subscriptionId: string,
-    options?: { pauseDays?: number; pauseUntil?: string },
-  ): Promise<void>;
-  /** Resume a paused subscription. */
-  resumeSubscription(subscriptionId: string): Promise<void>;
 
   // ── Invoices ──────────────────────────────
   /** Get invoices for a customer. */
@@ -409,17 +399,6 @@ export function createBillingInstance(
       return cancelSubscriptionHelper(sdk, subscriptionId, options);
     },
 
-    async pauseSubscription(
-      subscriptionId: string,
-      options?: { pauseDays?: number; pauseUntil?: string },
-    ): Promise<void> {
-      return pauseSubscriptionHelper(sdk, subscriptionId, options);
-    },
-
-    async resumeSubscription(subscriptionId: string): Promise<void> {
-      return resumeSubscriptionHelper(sdk, subscriptionId);
-    },
-
     // ── Invoices ──────────────────────────────
     async getInvoices(
       externalId: string,
@@ -489,10 +468,10 @@ export type {
   BillingPlan,
   BillingPrice,
   BillingFeature,
-  BillingSubscription,
+  // BillingSubscription,         // Hidden: use Customer Portal
   EntitlementCheckResult,
-  FeatureUsageResult,
-  TrackUsageParams,
+  // FeatureUsageResult,          // Hidden: use Customer Portal
+  // TrackUsageParams,            // Hidden: use Customer Portal
   CheckoutParams,
   TirdadEventMap,
   TirdadEventName,
@@ -507,11 +486,11 @@ export type {
   DedupStore,
   ObservabilityConfig,
   MinimalLogger,
-  SubscriptionStatus,
+  // SubscriptionStatus,          // Hidden: use Customer Portal
   WebhookContext,
   TirdadCustomerInfo,
-  TirdadSubscriptionInfo,
-  TirdadInvoiceInfo,
+  // TirdadSubscriptionInfo,      // Hidden: use Customer Portal
+  // TirdadInvoiceInfo,           // Hidden: use Customer Portal
   TirdadWalletInfo,
 } from "./types.js";
 

@@ -1,6 +1,6 @@
 {
   "name": "@tirdad/nextjs",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.0",
   "description": "Developer toolkit for integrating Tirdad billing into TypeScript applications",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -61,16 +61,6 @@
         "types": "./dist/testing/index.d.cts",
         "default": "./dist/testing/index.cjs"
       }
-    },
-    "./express": {
-      "import": {
-        "types": "./dist/express/index.d.ts",
-        "default": "./dist/express/index.js"
-      },
-      "require": {
-        "types": "./dist/express/index.d.cts",
-        "default": "./dist/express/index.cjs"
-      }
     }
   },
   "scripts": {
@@ -95,11 +85,16 @@
   "license": "MIT",
   "dependencies": {
     "@flexprice/sdk": "^2.0.16",
+    "@tanstack/react-query": "^5.100.9",
     "svix": "^1.90.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/react": "^19.2.14",
+    "@vitest/coverage-v8": "3.2.4",
+    "jsdom": "^27.0.1",
     "react": ">=18",
     "tsup": "^8",
     "typescript": "^5",

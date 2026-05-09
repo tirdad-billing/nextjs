@@ -23,8 +23,18 @@ export type { BillingInstance } from "./index.js";
  * Returns both the billing instance and the route handler.
  */
 export function TirdadBilling(config: TirdadBillingConfig) {
-  const billing = createBillingInstance(config);
-  const logger = config.observability?.logger ?? console;
+  if (!config.auth?.resolveActor) {
+    throw new Error(
+      "TirdadBilling (Next.js adapter) requires config.auth.resolveActor. " +
+      "If you only need the SDK without HTTP routes, use createBillingInstance() instead.",
+    );
+  }
+
+  // After the guard, auth is guaranteed to be defined
+  const resolvedConfig = config as TirdadBillingConfig & { auth: NonNullable<TirdadBillingConfig["auth"]> };
+
+  const billing = createBillingInstance(resolvedConfig);
+  const logger = resolvedConfig.observability?.logger ?? console;
 
   /**
    * Next.js App Router catch-all route handler.
@@ -47,7 +57,7 @@ export function TirdadBilling(config: TirdadBillingConfig) {
       // Resolve the actor for authenticated routes (all except webhook)
       let actor: BillingActor | null = null;
       if (route.key !== "webhook") {
-        actor = await config.auth.resolveActor(req);
+        actor = await resolvedConfig.auth.resolveActor(req);
         if (!actor) {
           throw new BillingCoreError("UNAUTHENTICATED", "Authentication required");
         }
@@ -310,7 +320,7 @@ export function TirdadBilling(config: TirdadBillingConfig) {
     ) => Response | Promise<Response>,
   ) {
     return async (req: NextRequest): Promise<Response> => {
-      const actor = await config.auth.resolveActor(req);
+      const actor = await resolvedConfig.auth.resolveActor(req);
       if (!actor) {
         return Response.json({ error: "Unauthorized" }, { status: 401 });
       }
@@ -349,7 +359,7 @@ export function TirdadBilling(config: TirdadBillingConfig) {
     routeHandler: (req: NextRequest) => Response | Promise<Response>,
   ) {
     return async (req: NextRequest): Promise<Response> => {
-      const actor = await config.auth.resolveActor(req);
+      const actor = await resolvedConfig.auth.resolveActor(req);
       if (!actor) {
         return routeHandler(req); // Proceed without tracking if no actor
       }

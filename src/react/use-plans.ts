@@ -3,9 +3,9 @@
  */
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import type { BillingPlan } from "../types.js";
 import { useBillingClient } from "./provider.jsx";
-import { useAsync } from "./use-async.js";
 
 export interface UsePlansOptions {
   /** Filter prices to a specific currency (e.g. "SAR"). */
@@ -32,10 +32,10 @@ export interface UsePlansResult {
  */
 export function usePlans(options?: UsePlansOptions): UsePlansResult {
   const client = useBillingClient();
-  const { data, isLoading, error, refetch } = useAsync(
-    () => client.getPlans(options),
-    [options?.currency, options?.lookupKey],
-  );
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["tirdad", "plans", options],
+    queryFn: () => client.getPlans(options),
+  });
 
   return {
     plans: data ?? [],

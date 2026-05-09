@@ -56,11 +56,13 @@ describe("Phase 3 — Batch Usage (mock)", () => {
         {
           externalId: "user_1",
           eventName: "api_call",
+          quantity: 1,
           idempotencyKey: "idem_1",
         },
         {
           externalId: "user_1",
           eventName: "api_call",
+          quantity: 1,
           idempotencyKey: "idem_2",
         },
       ]),
@@ -72,10 +74,5 @@ describe("Phase 3 — React exports", () => {
   it("exports useInvoices", async () => {
     const mod = await import("../src/react/use-invoices.js");
     expect(typeof mod.useInvoices).toBe("function");
-  });
-
-  it("exports UsageBar", async () => {
-    const mod = await import("../src/react/usage-bar.jsx");
-    expect(typeof mod.UsageBar).toBe("function");
   });
 });

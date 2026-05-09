@@ -3,8 +3,8 @@
  */
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useBillingClient } from "./provider.jsx";
-import { useAsync } from "./use-async.js";
 
 export interface UseInvoicesResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,10 +27,10 @@ export function useInvoices(options?: {
   offset?: number;
 }): UseInvoicesResult {
   const client = useBillingClient();
-  const { data, isLoading, error, refetch } = useAsync(
-    () => client.getInvoices(options),
-    [options?.limit, options?.offset],
-  );
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["tirdad", "invoices", options],
+    queryFn: () => client.getInvoices(options),
+  });
 
   return {
     invoices: data?.invoices ?? [],

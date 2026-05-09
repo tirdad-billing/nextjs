@@ -47,21 +47,19 @@ export default defineConfig([
     dts: true,
     sourcemap: true,
     splitting: false,
-    treeshake: true,
+    treeshake: false,
     external: ["react", "react-dom", "react/jsx-runtime"],
     banner: {
       js: '"use client";',
     },
   },
-  // Express adapter
-  {
-    entry: {
-      "express/index": "src/express/index.ts",
-    },
-    format: ["esm", "cjs"],
-    dts: true,
-    sourcemap: true,
-    splitting: false,
-    treeshake: true,
-  },
+  // Express adapter — hidden for beta (Next.js/React only)
+  // {
+  //   entry: { "express/index": "src/express/index.ts" },
+  //   format: ["esm", "cjs"],
+  //   dts: true,
+  //   sourcemap: true,
+  //   splitting: false,
+  //   treeshake: true,
+  // },
 ]);

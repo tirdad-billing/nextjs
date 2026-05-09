@@ -3,8 +3,8 @@
  */
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useBillingClient } from "./provider.jsx";
-import { useAsync } from "./use-async.js";
 
 export interface UseUsageResult {
   /** Full usage summary. */
@@ -23,10 +23,10 @@ export interface UseUsageResult {
  */
 export function useUsage(): UseUsageResult {
   const client = useBillingClient();
-  const { data, isLoading, error, refetch } = useAsync(
-    () => client.getUsageSummary(),
-    [],
-  );
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["tirdad", "usage"],
+    queryFn: () => client.getUsageSummary(),
+  });
 
   return {
     usage: data,

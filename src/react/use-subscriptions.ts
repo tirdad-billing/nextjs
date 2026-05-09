@@ -3,9 +3,9 @@
  */
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import type { BillingSubscription } from "../types.js";
 import { useBillingClient } from "./provider.jsx";
-import { useAsync } from "./use-async.js";
 
 export interface UseSubscriptionsResult {
   /** All subscriptions for the current user. */
@@ -26,10 +26,10 @@ export interface UseSubscriptionsResult {
  */
 export function useSubscriptions(): UseSubscriptionsResult {
   const client = useBillingClient();
-  const { data, isLoading, error, refetch } = useAsync(
-    () => client.getSubscriptions(),
-    [],
-  );
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["tirdad", "subscriptions"],
+    queryFn: () => client.getSubscriptions(),
+  });
 
   const subscriptions = data?.subscriptions ?? [];
 

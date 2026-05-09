@@ -64,35 +64,6 @@ export async function cancelSubscription(
   });
 }
 
-/**
- * Pause a subscription.
- *
- * @param options.pauseDays - Number of days to pause.
- * @param options.pauseUntil - ISO 8601 date when pause should end.
- */
-export async function pauseSubscription(
-  sdk: Flexprice,
-  subscriptionId: string,
-  options?: { pauseDays?: number; pauseUntil?: string },
-): Promise<void> {
-  await sdk.subscriptions.pauseSubscription(subscriptionId, {
-    pauseMode: "immediate",
-    ...(options?.pauseDays ? { pauseDays: options.pauseDays } : {}),
-    ...(options?.pauseUntil ? { pauseEnd: options.pauseUntil } : {}),
-  });
-}
-
-/**
- * Resume a paused subscription.
- */
-export async function resumeSubscription(
-  sdk: Flexprice,
-  subscriptionId: string,
-): Promise<void> {
-  await sdk.subscriptions.resumeSubscription(subscriptionId, {
-    resumeMode: "immediate",
-  });
-}
 
 /**
  * Map a raw SDK subscription response to BillingSubscription.

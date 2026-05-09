@@ -8,7 +8,7 @@ describe("Subscriptions (via MockTirdadBilling)", () => {
   it("getSubscriptions returns empty array by default", async () => {
     const billing = MockTirdadBilling();
     const subs = await billing.getSubscriptions("user_123");
-    expect(subs).toEqual([]);
+    expect(subs).toEqual({ subscriptions: [], total: 0 });
   });
 
   it("getPrimarySubscription returns null by default", async () => {
@@ -24,17 +24,5 @@ describe("Subscriptions (via MockTirdadBilling)", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("pauseSubscription does not throw", async () => {
-    const billing = MockTirdadBilling();
-    await expect(
-      billing.pauseSubscription("sub_123"),
-    ).resolves.toBeUndefined();
-  });
 
-  it("resumeSubscription does not throw", async () => {
-    const billing = MockTirdadBilling();
-    await expect(
-      billing.resumeSubscription("sub_123"),
-    ).resolves.toBeUndefined();
-  });
 });

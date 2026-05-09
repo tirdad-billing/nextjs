@@ -354,11 +354,19 @@ export function createBillingInstance(
     ): Promise<{ url: string; subscriptionId?: string }> {
       const customer = await instance.resolveCustomer(actor);
 
+      // Resolve the actual currency from the plan's prices if not explicitly provided
+      let currency = params.currency;
+      if (!currency) {
+        const plan = await getPlan(sdk, params.planId);
+        currency = plan?.prices?.[0]?.currency ?? "USD";
+        logger.info(`[billing] Resolved currency=${currency} from plan ${params.planId}`);
+      }
+
       // Create subscription via SDK
       const sub = await sdk.subscriptions.createSubscription({
         customerId: customer.id,
         planId: params.planId,
-        currency: params.currency ?? "USD",
+        currency,
         billingCadence: "RECURRING",
         billingPeriod: "MONTHLY",
         ...(params.couponCode ? { coupons: [params.couponCode] } : {}),

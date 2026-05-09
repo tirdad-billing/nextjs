@@ -254,8 +254,8 @@ export interface TirdadBillingConfig {
    * or pass an object to configure.
    */
   entitlementCache?:
-    | boolean
-    | { ttlMs?: number; maxEntries?: number };
+  | boolean
+  | { ttlMs?: number; maxEntries?: number };
 }
 
 // ─── Helper Return Types ──────────────────────────────────────
@@ -297,6 +297,7 @@ export interface EntitlementCheckResult {
   isSoftLimit: boolean;
   usageLimit?: number;
   usageResetPeriod?: string;
+  staticValues?: string[];
   sources: Array<{
     entityType: string;
     entityName: string;

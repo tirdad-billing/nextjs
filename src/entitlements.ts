@@ -50,20 +50,21 @@ export async function checkFeature(
   }
 
   return {
-    isEnabled: match.entitlement?.is_enabled ?? false,
+    isEnabled: match.entitlement?.isEnabled ?? match.entitlement?.is_enabled ?? false,
     feature: {
-      lookupKey: match.feature?.lookup_key ?? lookupKey,
+      lookupKey: match.feature?.lookupKey ?? match.feature?.lookup_key ?? lookupKey,
       type: match.feature?.type ?? "boolean",
       name: match.feature?.name ?? "",
     },
-    isSoftLimit: match.entitlement?.is_soft_limit ?? false,
-    usageLimit: match.entitlement?.usage_limit ?? undefined,
-    usageResetPeriod: match.entitlement?.usage_reset_period ?? undefined,
+    isSoftLimit: match.entitlement?.isSoftLimit ?? match.entitlement?.is_soft_limit ?? false,
+    usageLimit: match.entitlement?.usageLimit ?? match.entitlement?.usage_limit ?? undefined,
+    usageResetPeriod: match.entitlement?.usageResetPeriod ?? match.entitlement?.usage_reset_period ?? undefined,
+    staticValues: match.entitlement?.staticValues ?? match.entitlement?.static_values ?? undefined,
     sources: (match.sources ?? []).map(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (s: any) => ({
-        entityType: s.entity_type ?? "",
-        entityName: s.entity_name ?? "",
+        entityType: s.entityType ?? s.entity_type ?? "",
+        entityName: s.entityName ?? s.entity_name ?? "",
       }),
     ),
   };

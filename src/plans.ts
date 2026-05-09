@@ -23,7 +23,7 @@ export async function getPlans(
   sdk: Flexprice,
   options?: GetPlansOptions,
 ): Promise<BillingPlan[]> {
-  const response = await sdk.plans.queryPlan({});
+  const response = await sdk.plans.queryPlan({ expand: "prices" });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items = (response as any)?.items ?? (response as any)?.plans ?? [];

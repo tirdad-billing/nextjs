@@ -99,9 +99,30 @@ export function TirdadBilling(config: TirdadBillingConfig) {
         );
       }
       logger.error(`[billing] Unexpected error: ${err}`);
+
+      // Try to extract a useful error message from Flexprice SDK errors
+      const errObj = err as Record<string, unknown>;
+      const statusCode =
+        typeof errObj?.statusCode === "number" ? errObj.statusCode : 500;
+      let message = "Internal billing error";
+
+      // Flexprice SDK errors have a 'body' field with JSON error details
+      if (typeof errObj?.body === "string") {
+        try {
+          const parsed = JSON.parse(errObj.body);
+          if (parsed.message) message = parsed.message;
+        } catch {
+          // body wasn't JSON, use it directly if short
+          if (errObj.body.length < 200) message = errObj.body;
+        }
+      } else if (typeof errObj?.message === "string") {
+        // Fall back to the error's own message
+        message = errObj.message;
+      }
+
       return Response.json(
-        { error: "Internal billing error" },
-        { status: 500 },
+        { error: message, code: "BILLING_ERROR" },
+        { status: statusCode },
       );
     }
   }
@@ -165,12 +186,7 @@ export function TirdadBilling(config: TirdadBillingConfig) {
   }
 
   async function handleSubscriptions(actor: BillingActor): Promise<Response> {
-    const customer = await billing.resolveCustomer(actor);
-
-    const subs = await billing.sdk.subscriptions.querySubscription({
-      customerId: customer.id,
-    });
-
+    const subs = await billing.getSubscriptions(actor.externalId);
     return Response.json({ subscriptions: subs });
   }
 
@@ -197,8 +213,19 @@ export function TirdadBilling(config: TirdadBillingConfig) {
       );
     }
 
-    const result = await billing.checkFeature(actor.externalId, lookupKey);
-    return Response.json(result);
+    try {
+      const result = await billing.checkFeature(actor.externalId, lookupKey);
+      return Response.json(result);
+    } catch (err) {
+      // Return a proper response for missing features instead of 500
+      if (err instanceof BillingCoreError && err.code === "FEATURE_NOT_FOUND") {
+        return Response.json(
+          { isEnabled: false, lookupKey, error: err.message },
+          { status: 404 },
+        );
+      }
+      throw err;
+    }
   }
 
   async function handleUsage(

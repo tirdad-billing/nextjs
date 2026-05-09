@@ -35,22 +35,39 @@ export async function resolveCustomer(
 ): Promise<ResolvedCustomer> {
   // First, try to find the customer by external ID
   try {
+    logger?.info(
+      `[billing] Looking up customer by externalId=${actor.externalId}`,
+    );
     const existing = await sdk.customers.getCustomerByExternalId(
       actor.externalId,
     );
 
     if (existing) {
+      logger?.info(
+        `[billing] Found existing customer id=${mapCustomerResponse(existing).id}`,
+      );
       return mapCustomerResponse(existing);
     }
   } catch (err: unknown) {
     // 404 = customer doesn't exist yet, proceed to create
     if (!isNotFoundError(err)) {
-      throw err;
+      logger?.info(
+        `[billing] Lookup failed with non-404 error, will try create. Error: ${extractErrorInfo(err)}`,
+      );
+      // Don't throw here — fall through to create attempt
+      // The lookup failure might be transient, and create might still work
+    } else {
+      logger?.info(
+        `[billing] Customer not found (404), will create new customer`,
+      );
     }
   }
 
   // Customer doesn't exist — create it
   try {
+    logger?.info(
+      `[billing] Creating customer: externalId=${actor.externalId}, email=${actor.email}`,
+    );
     const created = await sdk.customers.createCustomer({
       externalId: actor.externalId,
       email: actor.email ?? "",
@@ -84,9 +101,30 @@ export async function resolveCustomer(
       }
     }
 
+    // 500 = server error — could be transient, try lookup as fallback
+    if (isServerError(err)) {
+      logger?.info(
+        `[billing] 500 on create, attempting lookup fallback. Error: ${extractErrorInfo(err)}`,
+      );
+
+      try {
+        const existing = await sdk.customers.getCustomerByExternalId(
+          actor.externalId,
+        );
+        if (existing) {
+          logger?.info(
+            `[billing] Found existing customer on 500 fallback`,
+          );
+          return mapCustomerResponse(existing);
+        }
+      } catch {
+        // Ignore fallback lookup failure
+      }
+    }
+
     throw new BillingCoreError(
       "CUSTOMER_CREATION_FAILED",
-      `Failed to create Tirdad customer for externalId "${actor.externalId}"`,
+      `Failed to create Tirdad customer for externalId "${actor.externalId}": ${extractErrorInfo(err)}`,
       { cause: err },
     );
   }
@@ -105,12 +143,24 @@ function mapCustomerResponse(response: any): ResolvedCustomer {
   };
 }
 
+/** Extract readable error info from any error shape. */
+function extractErrorInfo(err: unknown): string {
+  if (!err || typeof err !== "object") return String(err);
+  const e = err as Record<string, unknown>;
+  const parts: string[] = [];
+  if (e.statusCode) parts.push(`status=${e.statusCode}`);
+  if (e.body) parts.push(`body=${typeof e.body === "string" ? e.body : JSON.stringify(e.body)}`);
+  if (e.message) parts.push(`message=${e.message}`);
+  return parts.join(", ") || String(err);
+}
+
 /** Check if an error is a 404 Not Found. */
 function isNotFoundError(err: unknown): boolean {
   if (err && typeof err === "object") {
     const e = err as Record<string, unknown>;
     if (e.statusCode === 404 || e.status === 404) return true;
     if (typeof e.message === "string" && e.message.includes("404")) return true;
+    if (typeof e.message === "string" && e.message.includes("not found")) return true;
   }
   return false;
 }
@@ -121,6 +171,19 @@ function isConflictError(err: unknown): boolean {
     const e = err as Record<string, unknown>;
     if (e.statusCode === 409 || e.status === 409) return true;
     if (typeof e.message === "string" && e.message.includes("409")) return true;
+    if (typeof e.message === "string" && e.message.includes("already exists")) return true;
   }
   return false;
 }
+
+/** Check if an error is a 500 server error. */
+function isServerError(err: unknown): boolean {
+  if (err && typeof err === "object") {
+    const e = err as Record<string, unknown>;
+    if (typeof e.statusCode === "number" && e.statusCode >= 500) return true;
+    if (typeof e.status === "number" && e.status >= 500) return true;
+    if (typeof e.message === "string" && e.message.includes("Status 500")) return true;
+  }
+  return false;
+}
+

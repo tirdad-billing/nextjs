@@ -1,17 +1,17 @@
 <p align="center">
-  <strong>@tirdad/nextjs</strong>
+  <strong>@tirdad/billing</strong>
 </p>
 
 <p align="center">
-  The TypeScript billing SDK for <a href="https://flexprice.io">Flexprice</a>-powered SaaS applications.
+  The official TypeScript SDK for integrating <a href="https://tirdad.ai">Tirdad</a> billing into Next.js applications.
   <br/>
   Plans · Checkout · Entitlements · Webhooks — one package, zero boilerplate.
 </p>
 
 <p align="center">
-  <a href="#install"><img alt="npm" src="https://img.shields.io/npm/v/@tirdad/nextjs?style=flat-square&color=0070f3"/></a>
+  <a href="#install"><img alt="npm" src="https://img.shields.io/npm/v/@tirdad/billing?style=flat-square&color=0070f3"/></a>
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square"/>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-69%20passed-brightgreen?style=flat-square"/>
+  <img alt="Tests" src="https://img.shields.io/badge/tests-88%20passed-brightgreen?style=flat-square"/>
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green?style=flat-square"/>
   <img alt="Beta" src="https://img.shields.io/badge/status-beta-orange?style=flat-square"/>
 </p>
@@ -20,10 +20,10 @@
 
 ## Overview
 
-`@tirdad/nextjs` connects your SaaS application to the [Flexprice](https://flexprice.io) billing platform. It handles the integration surface you build on top of — plan display, checkout initiation, feature gating, and webhook processing — while delegating customer-facing billing management (invoices, subscriptions, usage dashboards) to the Flexprice **Customer Portal**.
+`@tirdad/billing` connects your SaaS application to the [Tirdad](https://tirdad.ai) billing platform. It handles the integration surface you build on top of — plan display, checkout initiation, feature gating, and webhook processing — while delegating customer-facing billing management (invoices, subscriptions, usage dashboards) to the Tirdad **Customer Portal**.
 
 ```
-Your App                           Flexprice
+Your App                           Tirdad
 ┌──────────────────────┐          ┌──────────────────────┐
 │  Pricing Page        │◄─plans──►│  Plan Catalog        │
 │  Checkout Flow       │◄─sub────►│  Subscription Engine │
@@ -41,13 +41,13 @@ Your App                           Flexprice
 ## Install
 
 ```bash
-npm install @tirdad/nextjs @flexprice/sdk
+npm install @tirdad/billing
 ```
 
 | Peer Dependency | Required When |
 |---|---|
-| `react` ≥ 18 | Using `@tirdad/nextjs/react` |
-| `next` ≥ 14 | Using `@tirdad/nextjs/next` |
+| `react` ≥ 18 | Using `@tirdad/billing/react` |
+| `next` ≥ 14 | Using `@tirdad/billing/next` |
 
 ---
 
@@ -57,7 +57,7 @@ npm install @tirdad/nextjs @flexprice/sdk
 
 ```ts
 // lib/billing.ts
-import { TirdadBilling } from "@tirdad/nextjs/next";
+import { TirdadBilling } from "@tirdad/billing/next";
 import { auth } from "@/lib/auth";
 
 export const billing = TirdadBilling({
@@ -99,8 +99,8 @@ export const { GET, POST } = billing.handlers;
 
 ```tsx
 // app/layout.tsx or providers.tsx
-import { BillingProvider } from "@tirdad/nextjs/react";
-import { TirdadClient } from "@tirdad/nextjs/client";
+import { BillingProvider } from "@tirdad/billing/react";
+import { TirdadClient } from "@tirdad/billing/client";
 
 const client = new TirdadClient({ basePath: "/api/billing" });
 
@@ -128,7 +128,7 @@ When mounted, the following routes are automatically available:
 | `POST` | `/api/billing/portal` | Get customer portal URL |
 | `GET` | `/api/billing/entitlements` | List entitlements |
 | `POST` | `/api/billing/entitlements/check` | Check a specific feature |
-| `POST` | `/api/billing/webhook` | Receive Flexprice webhooks |
+| `POST` | `/api/billing/webhook` | Receive Tirdad webhooks |
 
 ---
 
@@ -141,7 +141,7 @@ All hooks require `<BillingProvider>` as an ancestor.
 Fetch available plans for pricing pages.
 
 ```tsx
-import { usePlans } from "@tirdad/nextjs/react";
+import { usePlans } from "@tirdad/billing/react";
 
 function PricingPage() {
   const { plans, isLoading, error } = usePlans({ currency: "USD" });
@@ -166,7 +166,7 @@ function PricingPage() {
 Check if the current user has access to a specific feature.
 
 ```tsx
-import { useHasFeature } from "@tirdad/nextjs/react";
+import { useHasFeature } from "@tirdad/billing/react";
 
 function ExportButton() {
   const { hasAccess, isLoading } = useHasFeature("pdf_exports");
@@ -183,7 +183,7 @@ function ExportButton() {
 Fetch all entitlements for the current user.
 
 ```tsx
-import { useEntitlements } from "@tirdad/nextjs/react";
+import { useEntitlements } from "@tirdad/billing/react";
 
 function EntitlementsList() {
   const { entitlements, isLoading } = useEntitlements();
@@ -200,7 +200,7 @@ function EntitlementsList() {
 Conditionally render content based on feature entitlements.
 
 ```tsx
-import { FeatureGate } from "@tirdad/nextjs/react";
+import { FeatureGate } from "@tirdad/billing/react";
 
 <FeatureGate
   feature="advanced_analytics"
@@ -309,7 +309,7 @@ Cached methods: `checkFeature()`, `hasAccess()`, `getEntitlements()`.
 Use the mock for unit tests — no API calls, no configuration:
 
 ```ts
-import { MockTirdadBilling, webhookFixtures } from "@tirdad/nextjs/testing";
+import { MockTirdadBilling, webhookFixtures } from "@tirdad/billing/testing";
 
 const billing = MockTirdadBilling({
   plans: [{ id: "plan_1", name: "Pro", ... }],
@@ -332,11 +332,11 @@ const { body, headers } = webhookFixtures.create("subscription.created", {
 
 | Import | Purpose | Environment |
 |---|---|---|
-| `@tirdad/nextjs` | Core factory | Server |
-| `@tirdad/nextjs/next` | Next.js App Router adapter | Server |
-| `@tirdad/nextjs/client` | Browser fetch client | Browser |
-| `@tirdad/nextjs/react` | React hooks + components | Browser |
-| `@tirdad/nextjs/testing` | Mock + webhook fixtures | Test |
+| `@tirdad/billing` | Core factory | Server |
+| `@tirdad/billing/next` | Next.js App Router adapter | Server |
+| `@tirdad/billing/client` | Browser fetch client | Browser |
+| `@tirdad/billing/react` | React hooks + components | Browser |
+| `@tirdad/billing/testing` | Mock + webhook fixtures | Test |
 
 ---
 
@@ -345,7 +345,7 @@ const { body, headers } = webhookFixtures.create("subscription.created", {
 ```ts
 TirdadBilling({
   config: {
-    apiUrl: string,           // Flexprice API base URL
+    apiUrl: string,           // Tirdad API base URL
     apiKey: string,           // API key (server-to-server)
     webhookSecret: string,    // Svix webhook secret
     timeout?: number,         // Request timeout in ms (default: 10000)
@@ -379,7 +379,7 @@ TirdadBilling({
 
 ## Customer Portal
 
-For customer-facing billing management (invoices, subscriptions, usage analytics), redirect users to the Flexprice Customer Portal:
+For customer-facing billing management (invoices, subscriptions, usage analytics), redirect users to the Tirdad Customer Portal:
 
 ```ts
 // Server: generate a portal session
@@ -389,7 +389,7 @@ const { url } = await billing.getPortalUrl(actor);
 
 ```tsx
 // Client: redirect from a button
-import { TirdadClient } from "@tirdad/nextjs/client";
+import { TirdadClient } from "@tirdad/billing/client";
 
 const client = new TirdadClient();
 

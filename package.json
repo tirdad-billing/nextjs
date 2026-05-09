@@ -1,5 +1,5 @@
 {
-  "name": "@tirdad/nextjs",
+  "name": "@tirdad/billing",
   "version": "1.0.0-beta.0",
   "description": "Developer toolkit for integrating Tirdad billing into TypeScript applications",
   "type": "module",

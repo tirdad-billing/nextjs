@@ -53,6 +53,36 @@ export function TirdadBilling(config: TirdadBillingConfig) {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
 
+    // CSRF protection (opt-in): for cookie-session apps, verify that
+    // state-changing POSTs originate from the same site. The webhook route is
+    // exempt — it's a server-to-server call authenticated by its Svix signature
+    // and carries no Origin header.
+    if (
+      config.routes?.csrfProtection &&
+      method === "POST" &&
+      route.key !== "webhook"
+    ) {
+      const origin = req.headers.get("origin");
+      const host = req.headers.get("host");
+      let sameOrigin = false;
+      if (origin && host) {
+        try {
+          sameOrigin = new URL(origin).host === host;
+        } catch {
+          sameOrigin = false;
+        }
+      }
+      if (!sameOrigin) {
+        logger.warn(
+          `[billing] CSRF check failed: origin=${origin ?? "<none>"} host=${host ?? "<none>"}`,
+        );
+        return Response.json(
+          { error: "CSRF validation failed", code: "CSRF_FAILED" },
+          { status: 403 },
+        );
+      }
+    }
+
     try {
       // Resolve the actor for authenticated routes (all except webhook)
       let actor: BillingActor | null = null;
@@ -110,13 +140,13 @@ export function TirdadBilling(config: TirdadBillingConfig) {
       }
       logger.error(`[billing] Unexpected error: ${err}`);
 
-      // Try to extract a useful error message from Flexprice SDK errors
+      // Try to extract a useful error message from Tirdad SDK errors
       const errObj = err as Record<string, unknown>;
       const statusCode =
         typeof errObj?.statusCode === "number" ? errObj.statusCode : 500;
       let message = "Internal billing error";
 
-      // Flexprice SDK errors have a 'body' field with JSON error details
+      // Tirdad SDK errors (TirdadError) carry a 'body' field with JSON details
       if (typeof errObj?.body === "string") {
         try {
           const parsed = JSON.parse(errObj.body);
@@ -171,14 +201,8 @@ export function TirdadBilling(config: TirdadBillingConfig) {
   }
 
   async function handlePortal(actor: BillingActor): Promise<Response> {
-    // Resolve customer to get their Tirdad ID for the portal
-    const customer = await billing.resolveCustomer(actor);
-
-    // Portal URL pattern — Tirdad's existing customer portal
-    // The URL construction depends on Tirdad's portal endpoint
-    const portalUrl = `${config.config.apiUrl}/portal/customer/${customer.id}`;
-
-    return Response.json({ url: portalUrl, customerId: customer.id });
+    const { url, customerId } = await billing.getPortalUrl(actor);
+    return Response.json({ url, customerId });
   }
 
   async function handleWebhookRoute(req: NextRequest): Promise<Response> {
@@ -227,11 +251,13 @@ export function TirdadBilling(config: TirdadBillingConfig) {
       const result = await billing.checkFeature(actor.externalId, lookupKey);
       return Response.json(result);
     } catch (err) {
-      // Return a proper response for missing features instead of 500
+      // A missing feature is a valid "no access" answer, not an error. Return
+      // 200 with isEnabled:false so the typed client receives the graceful body
+      // instead of throwing on a non-2xx status.
       if (err instanceof BillingCoreError && err.code === "FEATURE_NOT_FOUND") {
         return Response.json(
           { isEnabled: false, lookupKey, error: err.message },
-          { status: 404 },
+          { status: 200 },
         );
       }
       throw err;

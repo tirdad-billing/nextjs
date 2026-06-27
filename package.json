@@ -84,8 +84,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@flexprice/sdk": "^2.0.16",
     "@tanstack/react-query": "^5.100.9",
+    "@tirdad-ai/sdk": "^2.1.17",
     "svix": "^1.90.0"
   },
   "devDependencies": {

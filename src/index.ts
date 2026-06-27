@@ -5,7 +5,7 @@
  * Re-exports all types and the SDK for escape hatches.
  */
 
-import { Flexprice } from "@flexprice/sdk";
+import { Tirdad } from "@tirdad-ai/sdk";
 import type {
   TirdadBillingConfig,
   BillingActor,
@@ -58,8 +58,8 @@ import { EntitlementCache } from "./cache.js";
 
 /** The billing instance returned by TirdadBilling(). */
 export interface BillingInstance {
-  /** The underlying @flexprice/sdk client (escape hatch). */
-  sdk: Flexprice;
+  /** The underlying @tirdad-ai/sdk client (escape hatch). */
+  sdk: Tirdad;
 
   // ── Customer Resolution ───────────────────
   /** Resolve a BillingActor to a Tirdad customer. */
@@ -105,6 +105,12 @@ export interface BillingInstance {
     actor: BillingActor,
     params: CheckoutParams,
   ): Promise<{ url: string; subscriptionId?: string }>;
+
+  // ── Customer Portal ───────────────────────
+  /** Get the customer-portal URL for an actor (resolves the customer first). */
+  getPortalUrl(
+    actor: BillingActor,
+  ): Promise<{ url: string; customerId: string }>;
 
   // ── Subscriptions ─────────────────────────
   /** Get all subscriptions for a customer. */
@@ -194,19 +200,10 @@ export function createBillingInstance(
   }
 
   // Initialize the SDK client
-  const sdk = new Flexprice({
+  const sdk = new Tirdad({
     serverURL: config.apiUrl,
     apiKeyAuth: config.apiKey,
     timeoutMs: config.timeout ?? 10_000,
-  });
-
-  // Initialize webhook handler
-  const handleWebhook = createWebhookHandler({
-    secret: config.webhookSecret,
-    callbacks: billingConfig.on,
-    webhookConfig: billingConfig.webhooks,
-    logger,
-    onWebhook: billingConfig.observability?.onWebhook,
   });
 
   // Customer ID cache: externalId → Tirdad customerId
@@ -219,6 +216,22 @@ export function createBillingInstance(
         typeof entitlementCacheConfig === "object" ? entitlementCacheConfig : undefined,
       )
     : null;
+
+  // Initialize webhook handler. Entitlement-mutating events bust the cache for
+  // the affected customer so checkFeature()/hasAccess() don't serve stale data
+  // after a plan change/cancellation arrives via webhook.
+  const handleWebhook = createWebhookHandler({
+    secret: config.webhookSecret,
+    callbacks: billingConfig.on,
+    webhookConfig: billingConfig.webhooks,
+    logger,
+    onWebhook: billingConfig.observability?.onWebhook,
+    invalidateCustomer: entitlementCache
+      ? (customer) => {
+          if (customer.id) entitlementCache.invalidateCustomer(customer.id);
+        }
+      : undefined,
+  });
 
   /**
    * Resolve externalId to Tirdad customerId, with caching.
@@ -352,13 +365,13 @@ export function createBillingInstance(
         logger.info(`[billing] Resolved currency=${currency} from plan ${params.planId}`);
       }
 
-      // Create subscription via SDK
+      // Create subscription via SDK. billingPeriod defaults to MONTHLY but is
+      // overridable so annual/one-time plans can be checked out.
       const sub = await sdk.subscriptions.createSubscription({
         customerId: customer.id,
         planId: params.planId,
         currency,
-        billingCadence: "RECURRING",
-        billingPeriod: "MONTHLY",
+        billingPeriod: params.billingPeriod ?? "MONTHLY",
         ...(params.couponCode ? { coupons: [params.couponCode] } : {}),
       });
 
@@ -377,6 +390,19 @@ export function createBillingInstance(
         url: checkoutUrl,
         subscriptionId: subResponse.id ?? subResponse.subscription_id,
       };
+    },
+
+    // ── Customer Portal ───────────────────────
+    async getPortalUrl(
+      actor: BillingActor,
+    ): Promise<{ url: string; customerId: string }> {
+      const customer = await instance.resolveCustomer(actor);
+      // Portal base is configurable; default to the API host's portal path.
+      const base = (
+        billingConfig.portal?.baseUrl ??
+        `${config.apiUrl.replace(/\/+$/, "")}/portal/customer`
+      ).replace(/\/+$/, "");
+      return { url: `${base}/${customer.id}`, customerId: customer.id };
     },
 
     // ── Subscriptions ─────────────────────────
@@ -468,10 +494,11 @@ export type {
   BillingPlan,
   BillingPrice,
   BillingFeature,
-  // BillingSubscription,         // Hidden: use Customer Portal
+  BillingSubscription,
   EntitlementCheckResult,
-  // FeatureUsageResult,          // Hidden: use Customer Portal
-  // TrackUsageParams,            // Hidden: use Customer Portal
+  FeatureUsageResult,
+  TrackUsageParams,
+  BillingPeriod,
   CheckoutParams,
   TirdadEventMap,
   TirdadEventName,
@@ -480,17 +507,18 @@ export type {
   TirdadConnectionConfig,
   AuthConfig,
   CheckoutConfig,
+  PortalConfig,
   RouteKey,
   RouteConfig,
   WebhookConfig,
   DedupStore,
   ObservabilityConfig,
   MinimalLogger,
-  // SubscriptionStatus,          // Hidden: use Customer Portal
+  SubscriptionStatus,
   WebhookContext,
   TirdadCustomerInfo,
-  // TirdadSubscriptionInfo,      // Hidden: use Customer Portal
-  // TirdadInvoiceInfo,           // Hidden: use Customer Portal
+  TirdadSubscriptionInfo,
+  TirdadInvoiceInfo,
   TirdadWalletInfo,
 } from "./types.js";
 

@@ -87,7 +87,17 @@ export function MockTirdadBilling(
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getEntitlements(): Promise<any> {
-      return options.entitlements ?? {};
+      // Mirror the real shape: CustomerEntitlementsResponse { customerId, features }
+      // where each feature is an aggregated { feature, entitlement, sources }.
+      const map = options.entitlements ?? {};
+      return {
+        customerId: defaultCustomer.id,
+        features: Object.entries(map).map(([lookupKey, isEnabled]) => ({
+          feature: { lookupKey, name: lookupKey, type: "boolean" },
+          entitlement: { isEnabled },
+          sources: [],
+        })),
+      };
     },
 
     async checkFeature(
@@ -160,6 +170,15 @@ export function MockTirdadBilling(
       };
     },
 
+    async getPortalUrl(
+      _actor: BillingActor,
+    ): Promise<{ url: string; customerId: string }> {
+      return {
+        url: `/portal/customer/${defaultCustomer.id}`,
+        customerId: defaultCustomer.id,
+      };
+    },
+
     async handleWebhook(
       body: string,
       headers: Record<string, string>,
@@ -169,7 +188,8 @@ export function MockTirdadBilling(
     },
 
     async getSubscriptions() {
-      return { subscriptions: options.subscriptions ?? [], total: options.subscriptions?.length ?? 0 } as any;
+      // Real getSubscriptions returns a bare array (BillingSubscription[]).
+      return (options.subscriptions ?? []) as any;
     },
 
     async getPrimarySubscription() {

@@ -11,7 +11,7 @@
 <p align="center">
   <a href="#install"><img alt="npm" src="https://img.shields.io/npm/v/@tirdad/billing?style=flat-square&color=0070f3"/></a>
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square"/>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-88%20passed-brightgreen?style=flat-square"/>
+  <img alt="Tests" src="https://img.shields.io/badge/tests-101%20passed-brightgreen?style=flat-square"/>
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green?style=flat-square"/>
   <img alt="Beta" src="https://img.shields.io/badge/status-beta-orange?style=flat-square"/>
 </p>
@@ -20,7 +20,7 @@
 
 ## Overview
 
-`@tirdad/billing` connects your SaaS application to the [Tirdad](https://tirdad.ai) billing platform. It handles the integration surface you build on top of — plan display, checkout initiation, feature gating, and webhook processing — while delegating customer-facing billing management (invoices, subscriptions, usage dashboards) to the Tirdad **Customer Portal**.
+`@tirdad/billing` connects your SaaS application to the [Tirdad](https://tirdad.ai) billing platform. It handles the integration surface you build on top of — plan display, checkout initiation, feature gating, usage tracking, and webhook processing. It also exposes hooks and routes for subscriptions, usage, and invoices so you can build in-app billing views, while still supporting a redirect to the hosted Tirdad **Customer Portal** when you prefer not to build those screens yourself.
 
 ```
 Your App                           Tirdad
@@ -128,7 +128,14 @@ When mounted, the following routes are automatically available:
 | `POST` | `/api/billing/portal` | Get customer portal URL |
 | `GET` | `/api/billing/entitlements` | List entitlements |
 | `POST` | `/api/billing/entitlements/check` | Check a specific feature |
+| `GET` | `/api/billing/subscriptions` | List the customer's subscriptions |
+| `POST` | `/api/billing/usage` | Track a usage event |
+| `GET` | `/api/billing/usage/summary` | Get the customer's usage summary |
+| `GET` | `/api/billing/invoices` | List the customer's invoices |
+| `POST` | `/api/billing/coupons/validate` | Validate a coupon code |
 | `POST` | `/api/billing/webhook` | Receive Tirdad webhooks |
+
+Disable any route via `routes.disable` (e.g. `disable: ["coupons.validate"]`).
 
 ---
 
@@ -191,6 +198,26 @@ function EntitlementsList() {
 }
 ```
 
+### `useSubscriptions`, `useUsage`, `useInvoices`
+
+Build in-app billing views without redirecting to the hosted portal. Each is
+backed by its auto-mounted route (`/subscriptions`, `/usage/summary`,
+`/invoices`).
+
+```tsx
+import { useSubscriptions, useUsage, useInvoices } from "@tirdad/billing/react";
+
+function BillingDashboard() {
+  const { subscriptions, primary, isLoading } = useSubscriptions();
+  const { usage } = useUsage();
+  const { invoices } = useInvoices();
+  // ...
+}
+```
+
+> Prefer the hosted experience? Skip these and redirect to the Customer Portal
+> (see [Customer Portal](#customer-portal)).
+
 ---
 
 ## Components
@@ -231,7 +258,8 @@ The billing instance exposes these methods:
 ```ts
 const plans = await billing.getPlans({ currency: "USD" });
 const plan  = await billing.getPlan("plan_pro");
-const price = billing.formatPrice(2999, "USD"); // "$29.99"
+// amount is in MAJOR units; fraction digits follow the currency (JPY→0, KWD→3).
+const price = billing.formatPrice(29.99, "USD"); // "$29.99"
 
 const { url } = await billing.checkout(actor, {
   planId: "plan_pro",

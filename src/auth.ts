@@ -2,10 +2,11 @@
  * @tirdad/billing — Auth Bridge & Customer Resolver
  *
  * Maps application users (BillingActor) to Tirdad customers.
- * Uses create-or-fetch pattern (race-safe, no TOCTOU window).
+ * Uses a lookup-first, create-on-miss pattern that tolerates races via a
+ * 409-conflict re-fetch fallback (see resolveCustomer for the exact ordering).
  */
 
-import type { Flexprice } from "@flexprice/sdk";
+import type { Tirdad } from "@tirdad-ai/sdk";
 import type { BillingActor, MinimalLogger } from "./types.js";
 import { BillingCoreError } from "./errors.js";
 
@@ -20,16 +21,18 @@ export interface ResolvedCustomer {
 /**
  * Resolve a BillingActor to a Tirdad customer.
  *
- * Strategy: create-then-catch-409
- * 1. Attempt to create a customer with the actor's externalId
- * 2. If 409 Conflict (already exists), fetch by externalId
- * 3. If the customer is found, return it
+ * Strategy: lookup-first, create-on-miss, with a 409 re-fetch fallback.
+ * 1. Look up the customer by externalId.
+ * 2. On 404 (or a transient lookup failure), attempt to create it.
+ * 3. If creation returns 409 Conflict (a parallel request created it first),
+ *    re-fetch by externalId and return that.
+ * 4. If creation returns a 5xx, attempt a lookup fallback before giving up.
  *
- * This is race-safe — even if two parallel requests both attempt creation,
- * one succeeds and the other falls back to fetch.
+ * This tolerates the create/create race — both callers 404, both attempt to
+ * create, one wins and the loser recovers the winner's record via the 409 path.
  */
 export async function resolveCustomer(
-  sdk: Flexprice,
+  sdk: Tirdad,
   actor: BillingActor,
   logger?: MinimalLogger,
 ): Promise<ResolvedCustomer> {

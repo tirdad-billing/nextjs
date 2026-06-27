@@ -64,6 +64,26 @@ export interface WebhookHandlerOptions {
     messageId: string;
     success: boolean;
   }) => void;
+  /**
+   * Called for events that may change a customer's entitlements, so the caller
+   * can bust any entitlement cache. Fires only after the event is accepted
+   * (signature verified, not a duplicate, callback didn't fail-and-propagate).
+   */
+  invalidateCustomer?: (
+    customer: TirdadCustomerInfo,
+    eventType: TirdadEventName,
+  ) => void;
+}
+
+/**
+ * Events that can change a customer's entitlements/usage allowances and should
+ * therefore invalidate the entitlement cache. Invoice/customer-profile events
+ * do not affect entitlements and are intentionally excluded.
+ */
+const ENTITLEMENT_MUTATING_PREFIXES = ["subscription.", "payment.", "wallet."];
+
+function mutatesEntitlements(eventType: TirdadEventName): boolean {
+  return ENTITLEMENT_MUTATING_PREFIXES.some((p) => eventType.startsWith(p));
 }
 
 export interface WebhookHandlerResult {
@@ -75,7 +95,8 @@ export interface WebhookHandlerResult {
  * Create a webhook handler that verifies signatures, deduplicates, and dispatches callbacks.
  */
 export function createWebhookHandler(options: WebhookHandlerOptions) {
-  const { secret, callbacks, webhookConfig, logger, onWebhook } = options;
+  const { secret, callbacks, webhookConfig, logger, onWebhook, invalidateCustomer } =
+    options;
   const svixWebhook = new Webhook(secret);
 
   // Initialize dedup store
@@ -114,7 +135,10 @@ export function createWebhookHandler(options: WebhookHandlerOptions) {
       (headers["webhook-id"] as string) ??
       "";
 
-    // 3. Deduplicate
+    // 3. Deduplicate — CHECK only. We defer marking the message as seen until
+    //    after it has been successfully processed (below). Marking it here, as
+    //    the old code did, meant a callback that threw and returned 500 would be
+    //    deduped-and-dropped on Svix's retry, defeating the retry entirely.
     if (dedupStore && messageId) {
       const seen = await dedupStore.has(messageId);
       if (seen) {
@@ -123,7 +147,6 @@ export function createWebhookHandler(options: WebhookHandlerOptions) {
         );
         return { status: 200, body: '{"status":"duplicate"}' };
       }
-      await dedupStore.set(messageId);
     }
 
     // 4. Parse event type
@@ -164,15 +187,35 @@ export function createWebhookHandler(options: WebhookHandlerOptions) {
           });
 
           if (errorStrategy === "propagate") {
+            // Return 500 WITHOUT marking the message as seen, so Svix's retry
+            // is reprocessed rather than silently dropped as a duplicate.
             return { status: 500, body: '{"status":"callback_error"}' };
           }
-          // "swallow" — return 200 so Svix doesn't retry
+          // "swallow" — fall through, return 200, and mark as seen so Svix
+          // doesn't retry an error we've chosen to ignore.
         }
       }
     } else {
       logger?.debug?.(
         `[billing] No callback registered for event: ${rawEventType}`,
       );
+    }
+
+    // 7. Bust the entitlement cache for events that can change entitlements.
+    if (eventType && mutatesEntitlements(eventType)) {
+      try {
+        invalidateCustomer?.(customer, eventType);
+      } catch (err) {
+        logger?.warn?.(
+          `[billing] Entitlement cache invalidation failed for ${rawEventType}: ${err}`,
+        );
+      }
+    }
+
+    // 8. Mark as seen now that the event was processed (delivered, swallowed, or
+    //    had no registered callback). Reached only when we are returning 200.
+    if (dedupStore && messageId) {
+      await dedupStore.set(messageId);
     }
 
     return { status: 200, body: '{"status":"ok"}' };

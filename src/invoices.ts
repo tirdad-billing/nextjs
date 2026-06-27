@@ -4,7 +4,7 @@
  * Invoice listing and retrieval helpers.
  */
 
-import type { Flexprice } from "@flexprice/sdk";
+import type { Tirdad } from "@tirdad-ai/sdk";
 
 /** Simplified invoice shape for the billing layer. */
 export interface BillingInvoice {
@@ -28,7 +28,7 @@ export interface BillingInvoice {
  * Get all invoices for a customer.
  */
 export async function getInvoices(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   options?: { limit?: number; offset?: number },
 ): Promise<{ invoices: BillingInvoice[]; total: number }> {
@@ -54,7 +54,7 @@ export async function getInvoices(
  * Get a single invoice by ID.
  */
 export async function getInvoice(
-  sdk: Flexprice,
+  sdk: Tirdad,
   invoiceId: string,
 ): Promise<BillingInvoice | null> {
   try {
@@ -70,7 +70,7 @@ export async function getInvoice(
  * Get the PDF download URL for an invoice.
  */
 export async function getInvoicePdfUrl(
-  sdk: Flexprice,
+  sdk: Tirdad,
   invoiceId: string,
 ): Promise<string | null> {
   try {

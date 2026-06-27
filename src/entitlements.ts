@@ -5,7 +5,7 @@
  * Resolves externalId → customerId internally.
  */
 
-import type { Flexprice } from "@flexprice/sdk";
+import type { Tirdad } from "@tirdad-ai/sdk";
 import type { EntitlementCheckResult } from "./types.js";
 import { BillingCoreError } from "./errors.js";
 
@@ -14,7 +14,7 @@ import { BillingCoreError } from "./errors.js";
  * Returns the raw SDK response.
  */
 export async function getEntitlements(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
@@ -26,7 +26,7 @@ export async function getEntitlements(
  * Fetches all entitlements and filters to the matching feature.
  */
 export async function checkFeature(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   lookupKey: string,
 ): Promise<EntitlementCheckResult> {
@@ -74,7 +74,7 @@ export async function checkFeature(
  * Simple boolean check: does the customer have access to this feature?
  */
 export async function hasAccess(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   lookupKey: string,
 ): Promise<boolean> {

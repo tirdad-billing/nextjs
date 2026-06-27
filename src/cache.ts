@@ -1,8 +1,9 @@
 /**
  * @tirdad/billing — Entitlement Cache
  *
- * In-memory LRU-ish cache with TTL to reduce API calls on
- * checkFeature() and hasAccess().
+ * In-memory LRU cache with TTL to reduce API calls on checkFeature(),
+ * hasAccess(), and getEntitlements(). Reads promote entries to
+ * most-recently-used; capacity eviction drops the least-recently-used entry.
  */
 
 export interface EntitlementCacheConfig {
@@ -29,6 +30,10 @@ export class EntitlementCache {
 
   /**
    * Get a cached value, or null if expired/missing.
+   *
+   * On a hit, the entry is promoted to most-recently-used (re-inserted at the
+   * tail of the Map) so that capacity eviction is true LRU, not insertion-order
+   * FIFO.
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
@@ -39,19 +44,29 @@ export class EntitlementCache {
       return null;
     }
 
+    // Promote to most-recently-used.
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+
     return entry.value as T;
   }
 
   /**
    * Set a cached value with TTL.
+   *
+   * Maps preserve insertion order, so the first key is the least-recently-used
+   * once get() promotes entries on access. We evict from the front at capacity.
    */
   set<T>(key: string, value: T): void {
-    // Evict oldest entries if at capacity
+    // If the key already exists, delete it first so re-inserting moves it to
+    // the tail (most-recently-used) rather than updating in place.
+    this.cache.delete(key);
+
+    // Evict the least-recently-used entry (front of the Map) if at capacity.
     if (this.cache.size >= this.maxEntries) {
-      // Delete the first (oldest) entry
-      const firstKey = this.cache.keys().next().value;
-      if (firstKey !== undefined) {
-        this.cache.delete(firstKey);
+      const lruKey = this.cache.keys().next().value;
+      if (lruKey !== undefined) {
+        this.cache.delete(lruKey);
       }
     }
 

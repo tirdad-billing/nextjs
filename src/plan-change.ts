@@ -4,7 +4,7 @@
  * Proration preview and plan change execution helpers.
  */
 
-import type { Flexprice } from "@flexprice/sdk";
+import type { Tirdad } from "@tirdad-ai/sdk";
 
 /** Preview of what a plan change will cost. */
 export interface PlanChangePreview {
@@ -27,7 +27,7 @@ export interface PlanChangePreview {
  * Shows proration details and the next invoice preview.
  */
 export async function previewPlanChange(
-  sdk: Flexprice,
+  sdk: Tirdad,
   subscriptionId: string,
   targetPlanId: string,
   options?: {
@@ -72,7 +72,7 @@ export async function previewPlanChange(
  * Use previewPlanChange() first to show the user what will happen.
  */
 export async function changePlan(
-  sdk: Flexprice,
+  sdk: Tirdad,
   subscriptionId: string,
   targetPlanId: string,
   options?: {

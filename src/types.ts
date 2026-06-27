@@ -2,7 +2,8 @@
  * @tirdad/billing — Core Types
  *
  * All type definitions for the Billing Core integration layer.
- * SDK types (DtoCustomerResponse, etc.) are re-exported from @flexprice/sdk.
+ * Raw SDK model types (CustomerResponse, etc.) live in @tirdad-ai/sdk; the
+ * types here are the simplified, stable shapes the billing layer exposes.
  */
 
 // ─── Actor Model ──────────────────────────────────────────────
@@ -142,7 +143,11 @@ export interface RouteConfig {
   basePath?: string;
   /** Routes to omit — IntelliSense-driven, compile error on typo */
   disable?: RouteKey[];
-  /** Enable CSRF token validation on POST routes (for cookie-session apps) */
+  /**
+   * Enable same-origin (Origin header) validation on state-changing POST routes,
+   * for cookie-session apps. The webhook route is exempt (Svix-signed,
+   * server-to-server). Default: false.
+   */
   csrfProtection?: boolean;
 }
 
@@ -239,11 +244,21 @@ export interface CheckoutConfig {
   cancelUrl: string;
 }
 
+/** Customer portal configuration. */
+export interface PortalConfig {
+  /**
+   * Base URL for the customer portal. The resolved customer id is appended.
+   * Defaults to `${config.apiUrl}/portal/customer`.
+   */
+  baseUrl?: string;
+}
+
 /** Full TirdadBilling initialization options. */
 export interface TirdadBillingConfig {
   config: TirdadConnectionConfig;
   auth?: AuthConfig;
   checkout?: CheckoutConfig;
+  portal?: PortalConfig;
   routes?: RouteConfig;
   webhooks?: WebhookConfig;
   observability?: ObservabilityConfig;
@@ -330,11 +345,23 @@ export interface TrackUsageParams {
   timestamp?: Date;
 }
 
+/** Billing period for a subscription, matching @tirdad-ai/sdk BillingPeriod. */
+export type BillingPeriod =
+  | "MONTHLY"
+  | "ANNUAL"
+  | "WEEKLY"
+  | "DAILY"
+  | "QUARTERLY"
+  | "HALF_YEARLY"
+  | "ONETIME";
+
 /** Checkout parameters. */
 export interface CheckoutParams {
   planId: string;
   couponCode?: string;
   currency?: string;
+  /** Billing period to subscribe on. Defaults to "MONTHLY". */
+  billingPeriod?: BillingPeriod;
   idempotencyKey?: string;
 }
 

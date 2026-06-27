@@ -5,7 +5,7 @@
  * Wraps SDK events.createEvent() and customers.getCustomerUsageSummary().
  */
 
-import type { Flexprice } from "@flexprice/sdk";
+import type { Tirdad } from "@tirdad-ai/sdk";
 import type { TrackUsageParams, FeatureUsageResult } from "./types.js";
 import { BillingCoreError } from "./errors.js";
 
@@ -14,7 +14,7 @@ import { BillingCoreError } from "./errors.js";
  * Requires an idempotencyKey (enforced at the type level and runtime).
  */
 export async function trackUsage(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   params: TrackUsageParams,
 ): Promise<void> {
@@ -40,7 +40,7 @@ export async function trackUsage(
  * Returns real-time usage vs. limits for all metered features.
  */
 export async function getUsageSummary(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
@@ -54,7 +54,7 @@ export async function getUsageSummary(
  * Fetches the full usage summary and filters to the matching feature.
  */
 export async function getFeatureUsage(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   lookupKey: string,
 ): Promise<FeatureUsageResult> {
@@ -77,16 +77,20 @@ export async function getFeatureUsage(
     );
   }
 
+  // @tirdad-ai/sdk FeatureUsageSummary is camelCase; currentUsage/usagePercent
+  // arrive as numeric strings, totalLimit as a number. Read camelCase first and
+  // keep snake_case fallbacks for forward-compat with raw/legacy payloads.
   return {
-    currentUsage: Number(match.current_usage ?? 0),
-    totalLimit: Number(match.total_limit ?? 0),
-    usagePercent: Number(match.usage_percent ?? 0),
-    isEnabled: match.is_enabled ?? false,
-    isSoftLimit: match.is_soft_limit ?? false,
-    isUnlimited: match.is_unlimited ?? false,
-    nextResetAt: match.next_usage_reset_at ?? null,
+    currentUsage: Number(match.currentUsage ?? match.current_usage ?? 0),
+    totalLimit: Number(match.totalLimit ?? match.total_limit ?? 0),
+    usagePercent: Number(match.usagePercent ?? match.usage_percent ?? 0),
+    isEnabled: match.isEnabled ?? match.is_enabled ?? false,
+    isSoftLimit: match.isSoftLimit ?? match.is_soft_limit ?? false,
+    isUnlimited: match.isUnlimited ?? match.is_unlimited ?? false,
+    nextResetAt: match.nextUsageResetAt ?? match.next_usage_reset_at ?? null,
     feature: {
-      lookupKey: match.feature?.lookup_key ?? lookupKey,
+      lookupKey:
+        match.feature?.lookupKey ?? match.feature?.lookup_key ?? lookupKey,
       name: match.feature?.name ?? "",
     },
   };
@@ -96,7 +100,7 @@ export async function getFeatureUsage(
  * Quick boolean: is the customer within their usage limit for this feature?
  */
 export async function isWithinLimit(
-  sdk: Flexprice,
+  sdk: Tirdad,
   customerId: string,
   lookupKey: string,
 ): Promise<boolean> {

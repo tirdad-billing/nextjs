@@ -1,9 +1,9 @@
 /// <reference types="vitest/globals" />
 /**
- * Integration Tests — Live Flexprice API
+ * Integration Tests — Live Tirdad API
  *
- * These tests hit the real Flexprice cloud API to validate the full
- * TirdadBilling factory end-to-end: customer resolution, plans,
+ * These tests hit the real Tirdad cloud API (via @tirdad-ai/sdk) to validate
+ * the full TirdadBilling factory end-to-end: customer resolution, plans,
  * entitlements, subscriptions, invoices, and usage.
  *
  * Requires env vars: TIRDAD_API_URL, TIRDAD_API_KEY, TIRDAD_WEBHOOK_SECRET
@@ -27,7 +27,7 @@ const describeIf = canRun ? describe : describe.skip;
 // Unique external ID per test run to avoid collisions
 const TEST_EXTERNAL_ID = `integration_test_${Date.now()}`;
 
-describeIf("Integration — Live Flexprice API", { timeout: 30_000 }, () => {
+describeIf("Integration — Live Tirdad API", { timeout: 30_000 }, () => {
   let billing: BillingInstance;
 
   beforeAll(() => {

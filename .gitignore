@@ -6,3 +6,4 @@ dist/
 .env.test
 coverage/
 pnpm-lock.yaml
+.DS_Store

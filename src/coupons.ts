@@ -4,7 +4,7 @@
  * Coupon validation and retrieval helpers.
  */
 
-import type { Flexprice } from "@flexprice/sdk";
+import type { Tirdad } from "@tirdad-ai/sdk";
 
 /** Simplified coupon shape for the billing layer. */
 export interface BillingCoupon {
@@ -12,6 +12,7 @@ export interface BillingCoupon {
   code: string;
   name: string;
   discountType: "percentage" | "fixed" | string;
+  /** Discount magnitude: a percentage (0–100) when type is "percentage", else a fixed amount. */
   discountValue: number;
   currency: string | null;
   isActive: boolean;
@@ -26,7 +27,7 @@ export interface BillingCoupon {
  * Returns the coupon details if valid, null if not found or expired.
  */
 export async function validateCoupon(
-  sdk: Flexprice,
+  sdk: Tirdad,
   codeOrId: string,
 ): Promise<BillingCoupon | null> {
   try {
@@ -74,28 +75,45 @@ export async function validateCoupon(
   }
 }
 
+/**
+ * Map a raw @tirdad-ai/sdk CouponResponse to BillingCoupon.
+ *
+ * Field reference (camelCase): `type` ("fixed"|"percentage"), `amountOff` and
+ * `percentageOff` (numeric strings), `status` ("published"|"archived"|"deleted"),
+ * `totalRedemptions`/`maxRedemptions`, `redeemAfter`/`redeemBefore` (validity
+ * window). There is no `code` field — coupons are identified by `name`/`id`.
+ * snake_case fallbacks are retained for forward-compat with raw payloads.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapCoupon(raw: any): BillingCoupon {
+  const discountType: string =
+    raw.type ?? raw.discountType ?? raw.discount_type ?? "percentage";
+
+  // Pick the discount magnitude that matches the coupon type.
+  const percentageOff = raw.percentageOff ?? raw.percentage_off;
+  const amountOff = raw.amountOff ?? raw.amount_off;
+  const rawDiscount =
+    discountType === "percentage"
+      ? (percentageOff ?? amountOff)
+      : (amountOff ?? percentageOff);
+
+  const status: string | undefined = raw.status;
+
   return {
     id: raw.id ?? "",
-    code: raw.code ?? raw.coupon_code ?? raw.name ?? "",
-    name: raw.name ?? raw.code ?? "",
-    discountType:
-      raw.discountType ?? raw.discount_type ?? raw.type ?? "percentage",
-    discountValue: parseFloat(
-      raw.discountValue ?? raw.discount_value ?? raw.amount ?? "0",
-    ),
+    code: raw.code ?? raw.name ?? raw.id ?? "",
+    name: raw.name ?? "",
+    discountType,
+    discountValue: parseFloat(String(rawDiscount ?? "0")) || 0,
     currency: raw.currency ?? null,
-    isActive:
-      (raw.status === "published" ||
-      raw.status === "active" ||
-      raw.isActive) ??
-      true,
+    // A coupon is usable only while published; archived/deleted are inactive.
+    // Fall back to true only when status is entirely absent from the payload.
+    isActive: status !== undefined ? status === "published" : true,
     maxRedemptions:
-      raw.maxRedemptions ?? raw.max_redemptions ?? raw.redemptionLimit ?? null,
+      raw.maxRedemptions ?? raw.max_redemptions ?? null,
     timesRedeemed:
-      raw.timesRedeemed ?? raw.times_redeemed ?? raw.redemptionCount ?? 0,
-    validFrom: raw.validFrom ?? raw.valid_from ?? raw.startDate ?? null,
-    validUntil: raw.validUntil ?? raw.valid_until ?? raw.expiresAt ?? null,
+      raw.totalRedemptions ?? raw.total_redemptions ?? raw.timesRedeemed ?? 0,
+    validFrom: raw.redeemAfter ?? raw.redeem_after ?? null,
+    validUntil: raw.redeemBefore ?? raw.redeem_before ?? null,
   };
 }

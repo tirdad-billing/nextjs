@@ -5,7 +5,7 @@
  * Wraps SDK plans.queryPlan() and plans.getPlan().
  */
 
-import type { Flexprice } from "@flexprice/sdk";
+import type { Tirdad } from "@tirdad-ai/sdk";
 import type { BillingPlan, BillingPrice, BillingFeature } from "./types.js";
 import { formatPrice } from "./currency.js";
 
@@ -20,7 +20,7 @@ export interface GetPlansOptions {
  * Fetch all plans from Tirdad, transformed into the BillingPlan shape.
  */
 export async function getPlans(
-  sdk: Flexprice,
+  sdk: Tirdad,
   options?: GetPlansOptions,
 ): Promise<BillingPlan[]> {
   const response = await sdk.plans.queryPlan({ expand: "prices" });
@@ -45,7 +45,7 @@ export async function getPlans(
  * Fetch a single plan by ID or lookup key.
  */
 export async function getPlan(
-  sdk: Flexprice,
+  sdk: Tirdad,
   idOrLookupKey: string,
 ): Promise<BillingPlan | null> {
   // First try to get by ID directly

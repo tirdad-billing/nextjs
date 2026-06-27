@@ -2,7 +2,7 @@
  * @tirdad/billing/client — Browser-safe Client SDK
  *
  * Typed fetch wrappers for calling billing API routes from the browser.
- * No server-side dependencies (no @flexprice/sdk, no svix).
+ * No server-side dependencies (no @tirdad-ai/sdk, no svix).
  */
 
 import { TirdadClientError } from "../errors.js";
